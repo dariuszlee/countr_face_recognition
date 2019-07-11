@@ -3,7 +3,12 @@ Sample Face Recognition Project
 
 
 ### To Run
+`
+python server.py
+`
 
-Debug Mode:
+then
 
-Server Mode:
+`
+python camera.py
+`
