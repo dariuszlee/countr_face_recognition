@@ -1,6 +1,8 @@
 import cv2
-import time
+from time import sleep
 from matplotlib import pyplot as plt
+import requests
+
 
 def start_capture(video_device=2, debug_mode=True):
     video_capture = cv2.VideoCapture(video_device)
@@ -15,12 +17,17 @@ def start_capture(video_device=2, debug_mode=True):
             ret, frame = video_capture.read()
 
             if ret:
-                frameRGB = frame[:,:,::-1] # BGR => RGB
-                if debug_mode:
+                if debug_mode == 'mp':
+                    frameRGB = frame[:,:,::-1] # BGR => RGB
                     plot_mathplotlib(frameRGB)
-                else:
-                    pass
+                elif debug_mode == 'file':
+                    write_to_file(frame)
+                    sleep(1)
+                elif debug_mode == 'server':
+                    send_to_server(frame)
+                    sleep(1)
     except Exception as e:
+        print(e)
         print("Shutting down camera")
     finally:
         # Close device
@@ -31,5 +38,22 @@ def plot_mathplotlib(frameRGB):
     plt.imshow(frameRGB)
     plt.pause(0.001)
 
+image = 1
+def write_to_file(frame):
+    global image
+    if image % 5 == 0:
+        image = 1
+    cv2.imwrite('./sample_images/data_{}.jpg'.format(image), frame)
+    image += 1
+
+def send_to_server(frame):
+    url = "http://localhost:5000"
+    _, img_encoding = cv2.imencode('.jpg', frame)
+    files = {'image': ('data_dar.jpg', img_encoding.tostring(), 'multipart/form-data')}
+    status = requests.post(url,files=files)
+    print(status)
+
 if __name__ == "__main__":
-    start_capture(2, True)
+    # Debug modes: mp, file, server
+    start_capture(2, "server")
+    # send_to_server(None)
