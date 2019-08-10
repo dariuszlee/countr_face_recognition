@@ -7,9 +7,9 @@ def begin_capture():
     frame_height = int(vs.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = int(vs.get(cv2.CAP_PROP_FPS))
     four_cc = cv2.VideoWriter_fourcc('M','J','P','G')
-    print("FPS", fps, four_cc)
+    four_cc_grey = cv2.VideoWriter_fourcc('M','J','P','G')
     out = cv2.VideoWriter('outpy.avi', four_cc, fps, (frame_width, frame_height))
-    out_transformed = cv2.VideoWriter('outpy_trans.avi', four_cc, fps, (frame_width, frame_height))
+    out_transformed = cv2.VideoWriter('outpy_trans.avi', four_cc, fps, (frame_width, frame_height), 0)
 
     firstFrame = None
 
@@ -26,13 +26,13 @@ def begin_capture():
             if frame is None:
                 break
             # resize the frame, convert it to grayscale, and blur it
-            # frame = imutils.resize(frame, width=500)
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             gray = cv2.GaussianBlur(gray, (21, 21), 0)
             # if the first frame is None, initialize it
             if firstFrame is None:
                 firstFrame = gray
                 continue
+
             out.write(frame)
             out_transformed.write(gray)
     finally:
