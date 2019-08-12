@@ -10,9 +10,11 @@ def index():
     data = request.files.get('image', '').stream.read()
     img_np = np.fromstring(data, dtype=np.uint8)
     img = cv2.imdecode(img_np, cv2.IMREAD_COLOR)[:,:, ::-1]
-    plt.imshow(img)
-    plt.show()
+    write_to_file(img)
     return "success"
 
+def write_to_file(img):
+    cv2.imwrite('received.png', img)
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", debug=True)

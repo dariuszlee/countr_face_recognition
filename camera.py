@@ -55,5 +55,5 @@ def send_to_server(frame):
 
 if __name__ == "__main__":
     # Debug modes: mp, file, server
-    start_capture(2, "server")
+    start_capture(2, "mp")
     # send_to_server(None)
