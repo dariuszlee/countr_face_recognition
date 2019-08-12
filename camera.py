@@ -5,6 +5,7 @@ import requests
 
 
 def start_capture(video_device=2, debug_mode=True):
+    print("Locals: ", locals())
     video_capture = cv2.VideoCapture(video_device)
 
     # Check success
@@ -47,7 +48,7 @@ def write_to_file(frame):
     image += 1
 
 def send_to_server(frame):
-    url = "http://localhost:5000"
+    url = "http://192.168.178.123:5000"
     _, img_encoding = cv2.imencode('.jpg', frame)
     files = {'image': ('data_dar.jpg', img_encoding.tostring(), 'multipart/form-data')}
     status = requests.post(url,files=files)
@@ -56,4 +57,5 @@ def send_to_server(frame):
 if __name__ == "__main__":
     # Debug modes: mp, file, server
     start_capture(2, "mp")
+    start_capture(0, "server")
     # send_to_server(None)
