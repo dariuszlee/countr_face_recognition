@@ -2,6 +2,10 @@ import cv2
 import numpy as np
 from skimage import transform as trans
 
+import mxnet as mx
+
+from arcface.mtcnn_detector import MtcnnDetector
+
 def parse_lst_line(line):
   '''
   Helper function for line parsing
@@ -104,6 +108,24 @@ def preprocess(img, bbox=None, landmark=None, **kwargs):
 
     return warped
 
+def get_input(detector,face_img):
+    # Pass input images through face detector
+    ret = detector.detect_face(face_img, det_type = 0)
+    if ret is None:
+        return None
+    bbox, points = ret
+    if bbox.shape[0]==0:
+        return None
+    bbox = bbox[0,0:4]
+    points = points[0,:].reshape((2,5)).T
+    # Call preprocess() to generate aligned images
+    nimg = preprocess(face_img, bbox, points, image_size='112,112')
+    return nimg
+    # nimg = cv2.cvtColor(nimg, cv2.COLOR_BGR2RGB)
+    # aligned = np.transpose(nimg, (2,0,1))
+    # return aligned
+
+
 if __name__ == "__main__":
     cap = cv2.VideoCapture("./outpy.avi")
 
@@ -128,16 +150,21 @@ if __name__ == "__main__":
         else:
             break
 
-    __import__('ipdb').set_trace()
 
+    if len(mx.test_utils.list_gpus())==0:
+        ctx = mx.cpu()
+    else:
+        ctx = mx.gpu(0)
+    # Configure face detector
+    det_threshold = [0.6,0.7,0.8]
+
+    detector = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1, accurate_landmark = True, threshold=det_threshold)
 
     for frame in frames:
-        frame = frame[::]
-        processed = preprocess(frame)
+        processed = get_input(detector, frame)
         cv2.imshow('Image', processed)
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break
-        __import__('ipdb').set_trace()
 
 
     # Closes all the frames
