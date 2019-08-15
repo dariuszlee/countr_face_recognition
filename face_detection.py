@@ -6,53 +6,10 @@ import mxnet as mx
 
 from arcface.mtcnn_detector import MtcnnDetector
 
-def parse_lst_line(line):
-  '''
-  Helper function for line parsing
-  '''
-  vec = line.strip().split("\t")
-  assert len(vec)>=3
-  aligned = int(vec[0])
-  image_path = vec[1]
-  label = int(vec[2])
-  bbox = None
-  landmark = None
-  if len(vec)>3:
-    bbox = np.zeros( (4,), dtype=np.int32)
-    for i in range(3,7):
-      bbox[i-3] = int(vec[i])
-    landmark = None
-    if len(vec)>7:
-      _l = []
-      for i in range(7,17):
-        _l.append(float(vec[i]))
-      landmark = np.array(_l).reshape( (2,5) ).T
-  return image_path, label, bbox, landmark, aligned
-
-
-def read_image(img_path, **kwargs):
-  '''
-  Read and transpose input image
-  '''
-  mode = kwargs.get('mode', 'rgb')
-  layout = kwargs.get('layout', 'HWC')
-  # Read image (transpose if necessary)
-  if mode=='gray':
-    img = cv2.imread(img_path, cv2.CV_LOAD_IMAGE_GRAYSCALE)
-  else:
-    img = cv2.imread(img_path, cv2.CV_LOAD_IMAGE_COLOR)
-    if mode=='rgb':
-      img = img[...,::-1]
-    if layout=='CHW':
-      img = np.transpose(img, (2,0,1))
-  return img
-
 def preprocess(img, bbox=None, landmark=None, **kwargs):
   '''
   Preprocess input image - returns aligned face images
   '''
-  if isinstance(img, str):
-    img = read_image(img, **kwargs)
   M = None
   image_size = []
   str_image_size = kwargs.get('image_size', '')
@@ -104,6 +61,7 @@ def preprocess(img, bbox=None, landmark=None, **kwargs):
   else: #do align using landmark
     assert len(image_size)==2
 
+    # warped = cv2.warpAffine(img,M,(image_size[1],image_size[0]), borderValue = 0.0)
     warped = cv2.warpAffine(img,M,(image_size[1],image_size[0]), borderValue = 0.0)
 
     return warped
