@@ -118,9 +118,13 @@ if __name__ == "__main__":
 
     detector = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1, accurate_landmark = True, threshold=det_threshold)
 
+    face_detected = []
     for frame in frames:
         processed = get_input(detector, frame)
-        cv2.imshow('Image', processed)
+        if processed is not None:
+            cv2.imshow('Image', processed)
+        else:
+            __import__('ipdb').set_trace()
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break
 
