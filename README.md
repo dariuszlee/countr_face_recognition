@@ -1,6 +1,12 @@
 # rcount_face_recognition
 Sample Face Recognition Project
 
+# Project Information
+- Raspberry Pi 3 B+
+- IDS UV 1551LE-C Camera
+    - Colour compression: yuv2, mjpg
+    - Rolling Shutter
+
 
 ### To Run
 `
