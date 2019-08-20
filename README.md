@@ -40,3 +40,6 @@ python camera.py
 3. Camera global vs rolling shutter
     . global shutter time should not have blur. reduce exposure time
 4. face detection quality classifier
+
+# Use Conda
+Makes life easier....
