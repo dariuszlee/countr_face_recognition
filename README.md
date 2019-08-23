@@ -40,12 +40,27 @@ python camera.py
 3. Implement raspberry pi video capture w/open cv 
 4. Implemented Face Recognition: Untested
 
+# Meeting Notes 
 1. take the crop, and remap
 2. Intrinsic property of lens
     a. infer camera parameters
 3. Camera global vs rolling shutter
-    . global shutter time should not have blur. reduce exposure time
+    a global shutter time should not have blur. reduce exposure time
+        - Shutter is rolling...
 4. face detection quality classifier
 
 # Use Conda
 Makes life easier....
+
+# From CountR
+- Test data
+
+# Week 08-23-2019
+- Motion detection raspberry pi
+- Blur detection - rolling camera
+- Blur correction?
+
+# Meeting note
+- Send email to countr
+    - cc dr schffer in email
+
