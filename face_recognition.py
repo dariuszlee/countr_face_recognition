@@ -49,8 +49,18 @@ def load_yale_embeddings(ctx):
     detector = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1, accurate_landmark = True, threshold=det_threshold)
 
     embeddings = dict()
-    for path in os.listdir():
+    for path in os.listdir("./yalefaces"):
+        __import__('ipdb').set_trace()
+        path = "./yalefaces/" + path
         reference_image = cv2.imread(path)
+        processed = get_input(detector, reference_image)
+        reference_me = transform_frame(processed)
+        reference_embedding = get_feature(model, reference_me)
+
+        embeddings[path] = reference_embedding
+
+    return embeddings
+
 
 
 
@@ -61,11 +71,11 @@ if __name__ == "__main__":
     else:
         ctx = mx.gpu(0)
 
+    yale_faces = load_yale_embeddings(ctx)
     model_name = "./resnet100.onnx"
     model = get_model(ctx, model_name)
 
     yale_faces = load_yale_embeddings(ctx)
-    __import__('ipdb').set_trace()
     reference_me = load_reference_embeddings(ctx)
     reference_me = transform_frame(reference_me)
 
