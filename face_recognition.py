@@ -1,7 +1,9 @@
 import cv2
+import os
+from arcface.mtcnn_detector import MtcnnDetector
+from face_detection import get_input
 import mxnet as mx
 import numpy as np
-import sklearn
 from mxnet.contrib.onnx.onnx2mx.import_model import import_model
 from sklearn.preprocessing import normalize
 
@@ -32,11 +34,8 @@ def transform_frame(frame):
     return aligned
 
 def load_reference_embeddings(ctx):
-    import os
     if os.path.exists("./passport_processed.jpg"):
         return cv2.imread("./passport_processed.jpg")
-    from arcface.mtcnn_detector import MtcnnDetector
-    from face_detection import get_input
     det_threshold = [0.6,0.7,0.8]
     detector = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1, accurate_landmark = True, threshold=det_threshold)
     reference_image = cv2.imread("./passport.jpg")
@@ -44,6 +43,15 @@ def load_reference_embeddings(ctx):
     processed = get_input(detector, reference_image)
     cv2.imwrite("./passport_processed.jpg", processed)
     return processed
+
+def load_yale_embeddings(ctx):
+    det_threshold = [0.6,0.7,0.8]
+    detector = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1, accurate_landmark = True, threshold=det_threshold)
+
+    embeddings = dict()
+    for path in os.listdir():
+        reference_image = cv2.imread(path)
+
 
 
 if __name__ == "__main__":
@@ -53,12 +61,15 @@ if __name__ == "__main__":
     else:
         ctx = mx.gpu(0)
 
-
     model_name = "./resnet100.onnx"
     model = get_model(ctx, model_name)
 
+    yale_faces = load_yale_embeddings(ctx)
+    __import__('ipdb').set_trace()
     reference_me = load_reference_embeddings(ctx)
     reference_me = transform_frame(reference_me)
+
+
     reference_embedding = get_feature(model, reference_me)
 
     cap = cv2.VideoCapture("./processed.avi")
