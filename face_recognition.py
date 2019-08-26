@@ -44,13 +44,12 @@ def load_reference_embeddings(ctx):
     cv2.imwrite("./passport_processed.jpg", processed)
     return processed
 
-def load_yale_embeddings(ctx):
+def load_yale_embeddings(ctx, model):
     det_threshold = [0.6,0.7,0.8]
     detector = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1, accurate_landmark = True, threshold=det_threshold)
 
     embeddings = dict()
     for path in os.listdir("./yalefaces"):
-        __import__('ipdb').set_trace()
         path = "./yalefaces/" + path
         reference_image = cv2.imread(path)
         processed = get_input(detector, reference_image)
@@ -62,6 +61,15 @@ def load_yale_embeddings(ctx):
     return embeddings
 
 
+def check_against_embedding_db(db, to_check):
+    greatest = (None, -29999)
+    for name, db_embedding in db.items():
+        similarity_score = np.dot(db_embedding, to_check)
+        if similarity_score > greatest[1]:
+            greatest = (name, similarity_score)
+    return greatest
+
+
 
 
 if __name__ == "__main__":
@@ -71,28 +79,32 @@ if __name__ == "__main__":
     else:
         ctx = mx.gpu(0)
 
-    yale_faces = load_yale_embeddings(ctx)
     model_name = "./resnet100.onnx"
     model = get_model(ctx, model_name)
 
-    yale_faces = load_yale_embeddings(ctx)
-    reference_me = load_reference_embeddings(ctx)
-    reference_me = transform_frame(reference_me)
-
-
-    reference_embedding = get_feature(model, reference_me)
+    yale_faces = load_yale_embeddings(ctx, model)
 
     cap = cv2.VideoCapture("./processed.avi")
+    most_likely = dict()
     if (cap.isOpened()== False):
         print("Error opening video stream or file")
     while(cap.isOpened()):
         ret, frame = cap.read()
         if ret == True:
-            cv2.imshow('Image', frame)
+            # cv2.imshow('Image', frame)
             frame = transform_frame(frame)
             embedding = get_feature(model, frame)
 
-            print("Current dot:", np.dot(embedding, reference_embedding))
+            most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
+            if most_similar_embedding[0] in most_likely:
+                most_likely[most_similar_embedding[0]] += 1
+            else:
+                most_likely[most_similar_embedding[0]] = 1
+        else:
+            break
 
-            if cv2.waitKey(25) & 0xFF == ord('q'):
-                break
+
+            # if cv2.waitKey(25) & 0xFF == ord('q'):
+            #     break
+    __import__('ipdb').set_trace()
+
