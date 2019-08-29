@@ -2,6 +2,7 @@ import cv2
 import os
 from arcface.mtcnn_detector import MtcnnDetector
 from face_detection import get_input
+import image_blur
 import mxnet as mx
 import numpy as np
 from mxnet.contrib.onnx.onnx2mx.import_model import import_model
@@ -92,6 +93,9 @@ if __name__ == "__main__":
         ret, frame = cap.read()
         if ret == True:
             # cv2.imshow('Image', frame)
+            if not image_blur.calculate_image_blur(frame):
+                continue
+
             frame = transform_frame(frame)
             embedding = get_feature(model, frame)
 
@@ -106,5 +110,29 @@ if __name__ == "__main__":
 
             # if cv2.waitKey(25) & 0xFF == ord('q'):
             #     break
+    total_vals = sum([v for k, v in most_likely.items()])
+    total = most_likely['./yalefaces/trainer_reference.png']
+    print("With blur detection: ", total/ total_vals * 100)
+
+    most_likely = dict()
+    if (cap.isOpened()== False):
+        print("Error opening video stream or file")
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        if ret == True:
+            # cv2.imshow('Image', frame)
+            frame = transform_frame(frame)
+            embedding = get_feature(model, frame)
+
+            most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
+            if most_similar_embedding[0] in most_likely:
+                most_likely[most_similar_embedding[0]] += 1
+            else:
+                most_likely[most_similar_embedding[0]] = 1
+        else:
+            break
+    total_vals = sum([v for k, v in most_likely.items()])
+    total = most_likely['./yalefaces/trainer_reference.png']
+    print("With blur detection: ", total/ total_vals * 100)
     __import__('ipdb').set_trace()
 
