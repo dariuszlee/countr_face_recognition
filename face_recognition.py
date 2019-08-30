@@ -92,6 +92,29 @@ if __name__ == "__main__":
     while(cap.isOpened()):
         ret, frame = cap.read()
         if ret == True:
+            frame = transform_frame(frame)
+            embedding = get_feature(model, frame)
+
+            most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
+            if most_similar_embedding[0] in most_likely:
+                most_likely[most_similar_embedding[0]] += 1
+            else:
+                most_likely[most_similar_embedding[0]] = 1
+        else:
+            break
+
+    total_vals = sum([v for k, v in most_likely.items()])
+    total = most_likely['./yalefaces/trainer_reference.png']
+    print("Raw Face Recognition", total/ total_vals * 100)
+    cap.release()
+
+    cap = cv2.VideoCapture("./processed.avi")
+    most_likely = dict()
+    if (cap.isOpened()== False):
+        print("Error opening video stream or file")
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        if ret == True:
             # cv2.imshow('Image', frame)
             if not image_blur.calculate_image_blur(frame):
                 continue
@@ -107,13 +130,12 @@ if __name__ == "__main__":
         else:
             break
 
-
-            # if cv2.waitKey(25) & 0xFF == ord('q'):
-            #     break
     total_vals = sum([v for k, v in most_likely.items()])
     total = most_likely['./yalefaces/trainer_reference.png']
     print("With blur detection: ", total/ total_vals * 100)
+    cap.release()
 
+    cap = cv2.VideoCapture("./processed_and_cleaned.avi")
     most_likely = dict()
     if (cap.isOpened()== False):
         print("Error opening video stream or file")
@@ -133,6 +155,4 @@ if __name__ == "__main__":
             break
     total_vals = sum([v for k, v in most_likely.items()])
     total = most_likely['./yalefaces/trainer_reference.png']
-    print("With blur detection: ", total/ total_vals * 100)
-    __import__('ipdb').set_trace()
-
+    print("With blur and frontal detection: ", total/ total_vals * 100)

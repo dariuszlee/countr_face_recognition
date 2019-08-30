@@ -128,7 +128,6 @@ if __name__ == "__main__":
         # if cv2.waitKey(25) & 0xFF == ord('q'):
         #     break
 
-    __import__('ipdb').set_trace()
     video = cv2.VideoWriter("./processed.avi", 0, 1, (112,112))
     for image in face_detected:
         if image is not None:

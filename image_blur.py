@@ -11,7 +11,6 @@ def calculate_image_blur(image):
 def get_frontal_dlib(image):
     pass
 
-
 if __name__ == "__main__":
     cap = cv2.VideoCapture("./processed.avi")
     detector = dlib.get_frontal_face_detector()
@@ -27,12 +26,16 @@ if __name__ == "__main__":
             if len(detected) == 0:
                 continue
 
-
             valids.append(frame)
-            cv2.imshow('Image', frame)
-            if cv2.waitKey(25) & 0xFF == ord('q'):
-                break
+            # cv2.imshow('Image', frame)
+            # if cv2.waitKey(25) & 0xFF == ord('q'):
+            #     break
         else:
             break
-    __import__('ipdb').set_trace()
+
+    video = cv2.VideoWriter("./processed_and_cleaned.avi", 0, 1, (112, 112))
+    for image in valids:
+        if image is not None:
+            video.write(image)
+    video.release()
 
