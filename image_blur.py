@@ -1,5 +1,8 @@
 import cv2
 import dlib
+import mxnet as mx
+def calculate_image_blur(frame):
+    pass
 
 def calculate_image_blur(image):
     is_valid_threshold = 80
@@ -35,4 +38,3 @@ if __name__ == "__main__":
         else:
             break
     __import__('ipdb').set_trace()
-

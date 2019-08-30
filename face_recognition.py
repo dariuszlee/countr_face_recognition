@@ -2,7 +2,7 @@ import cv2
 import os
 from arcface.mtcnn_detector import MtcnnDetector
 from face_detection import get_input
-import image_blur
+from image_blur import calculate_image_blur
 import mxnet as mx
 import numpy as np
 from mxnet.contrib.onnx.onnx2mx.import_model import import_model
@@ -74,7 +74,7 @@ def check_against_embedding_db(db, to_check):
 
 
 if __name__ == "__main__":
-    mx.test_utils.download('https://s3.amazonaws.com/onnx-model-zoo/arcface/resnet100.onnx')
+    # mx.test_utils.download('https://s3.amazonaws.com/onnx-model-zoo/arcface/resnet100.onnx')
     if len(mx.test_utils.list_gpus())==0:
         ctx = mx.cpu()
     else:
@@ -93,7 +93,7 @@ if __name__ == "__main__":
         ret, frame = cap.read()
         if ret == True:
             # cv2.imshow('Image', frame)
-            if not image_blur.calculate_image_blur(frame):
+            if not calculate_image_blur(frame):
                 continue
 
             frame = transform_frame(frame)

@@ -60,7 +60,8 @@ Makes life easier....
 - Blur detection - rolling camera
 - Blur correction?
 
-# Meeting note
-- Send email to countr
-    - cc dr schffer in email
-
+# Meetig notes
+1. Send Avi Demos To Dr. Scheffer
+2. Performance Checks: 
+    - Raspberry Pi: What can we move on and off?
+    - 
