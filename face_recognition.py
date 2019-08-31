@@ -2,7 +2,7 @@ import cv2
 import os
 from arcface.mtcnn_detector import MtcnnDetector
 from face_detection import get_input
-import image_blur
+import dlib_hog_face_detection
 import mxnet as mx
 import numpy as np
 from mxnet.contrib.onnx.onnx2mx.import_model import import_model
@@ -70,11 +70,8 @@ def check_against_embedding_db(db, to_check):
             greatest = (name, similarity_score)
     return greatest
 
-
-
-
-if __name__ == "__main__":
-    mx.test_utils.download('https://s3.amazonaws.com/onnx-model-zoo/arcface/resnet100.onnx')
+def main():
+    # mx.test_utils.download('https://s3.amazonaws.com/onnx-model-zoo/arcface/resnet100.onnx')
     if len(mx.test_utils.list_gpus())==0:
         ctx = mx.cpu()
     else:
@@ -85,13 +82,13 @@ if __name__ == "__main__":
 
     yale_faces = load_yale_embeddings(ctx, model)
 
-    cap = cv2.VideoCapture("./processed.avi")
+    cap = cv2.VideoCapture("./face_capture_blur_frontal.avi")
     most_likely = dict()
-    if (cap.isOpened()== False):
+    if not cap.isOpened():
         print("Error opening video stream or file")
     while(cap.isOpened()):
         ret, frame = cap.read()
-        if ret == True:
+        if ret:
             frame = transform_frame(frame)
             embedding = get_feature(model, frame)
 
@@ -108,51 +105,54 @@ if __name__ == "__main__":
     print("Raw Face Recognition", total/ total_vals * 100)
     cap.release()
 
-    cap = cv2.VideoCapture("./processed.avi")
-    most_likely = dict()
-    if (cap.isOpened()== False):
-        print("Error opening video stream or file")
-    while(cap.isOpened()):
-        ret, frame = cap.read()
-        if ret == True:
-            # cv2.imshow('Image', frame)
-            if not image_blur.calculate_image_blur(frame):
-                continue
+    # cap = cv2.VideoCapture("./processed.avi")
+    # most_likely = dict()
+    # if not cap.isOpened():
+    #     print("Error opening video stream or file")
+    # while(cap.isOpened()):
+    #     ret, frame = cap.read()
+    #     if ret:
+    #         # cv2.imshow('Image', frame)
+    #         if not dlib_hog_face_detection.calculate_image_blur(frame):
+    #             continue
 
-            frame = transform_frame(frame)
-            embedding = get_feature(model, frame)
+    #         frame = transform_frame(frame)
+    #         embedding = get_feature(model, frame)
 
-            most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
-            if most_similar_embedding[0] in most_likely:
-                most_likely[most_similar_embedding[0]] += 1
-            else:
-                most_likely[most_similar_embedding[0]] = 1
-        else:
-            break
+    #         most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
+    #         if most_similar_embedding[0] in most_likely:
+    #             most_likely[most_similar_embedding[0]] += 1
+    #         else:
+    #             most_likely[most_similar_embedding[0]] = 1
+    #     else:
+    #         break
 
-    total_vals = sum([v for k, v in most_likely.items()])
-    total = most_likely['./yalefaces/trainer_reference.png']
-    print("With blur detection: ", total/ total_vals * 100)
-    cap.release()
+    # total_vals = sum([v for k, v in most_likely.items()])
+    # total = most_likely['./yalefaces/trainer_reference.png']
+    # print("With blur detection: ", total/ total_vals * 100)
+    # cap.release()
 
-    cap = cv2.VideoCapture("./processed_and_cleaned.avi")
-    most_likely = dict()
-    if (cap.isOpened()== False):
-        print("Error opening video stream or file")
-    while(cap.isOpened()):
-        ret, frame = cap.read()
-        if ret == True:
-            # cv2.imshow('Image', frame)
-            frame = transform_frame(frame)
-            embedding = get_feature(model, frame)
+    # cap = cv2.VideoCapture("./processed_and_cleaned.avi")
+    # most_likely = dict()
+    # if not cap.isOpened():
+    #     print("Error opening video stream or file")
+    # while cap.isOpened():
+    #     ret, frame = cap.read()
+    #     if ret:
+    #         # cv2.imshow('Image', frame)
+    #         frame = transform_frame(frame)
+    #         embedding = get_feature(model, frame)
 
-            most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
-            if most_similar_embedding[0] in most_likely:
-                most_likely[most_similar_embedding[0]] += 1
-            else:
-                most_likely[most_similar_embedding[0]] = 1
-        else:
-            break
-    total_vals = sum([v for k, v in most_likely.items()])
-    total = most_likely['./yalefaces/trainer_reference.png']
-    print("With blur and frontal detection: ", total/ total_vals * 100)
+    #         most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
+    #         if most_similar_embedding[0] in most_likely:
+    #             most_likely[most_similar_embedding[0]] += 1
+    #         else:
+    #             most_likely[most_similar_embedding[0]] = 1
+    #     else:
+    #         break
+    # total_vals = sum([v for k, v in most_likely.items()])
+    # total = most_likely['./yalefaces/trainer_reference.png']
+    # print("With blur and frontal detection: ", total/ total_vals * 100)
+
+if __name__ == "__main__":
+    main()
