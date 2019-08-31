@@ -2,7 +2,7 @@ import cv2
 import os
 from arcface.mtcnn_detector import MtcnnDetector
 from face_detection import get_input
-import dlib_hog_face_detection
+from dlib_hog_face_detection import calculate_image_blur
 import mxnet as mx
 import numpy as np
 from mxnet.contrib.onnx.onnx2mx.import_model import import_model
