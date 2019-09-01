@@ -9,7 +9,6 @@ def calculate_image_blur(image):
     print(blur)
     return blur > is_valid_threshold
 
-
 def get_frontal_dlib(frame, detector, desired_size):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     detected = detector(gray, 0)
@@ -37,11 +36,11 @@ def scale_rectangle(rect, desired_size):
     if bottom - top % 2 == 1:
         bottom += 1
     curr_size = bottom - top
-    to_add_to_both_sides = int((desired_size[0] - curr_size) / 2)
+    to_add_to_both_sides = int((desired_size[1] - curr_size) / 2)
     top -= to_add_to_both_sides
     bottom += to_add_to_both_sides
 
-    return left, right, top, bottom
+    return left, left + desired_size[0], top, top + desired_size[1]
 
 
 

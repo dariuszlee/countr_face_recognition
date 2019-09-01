@@ -1,4 +1,6 @@
 import cv2
+import dlib
+from dlib_hog_face_detection import get_frontal_dlib
 import os
 from arcface.mtcnn_detector import MtcnnDetector
 from face_detection import get_input
@@ -62,6 +64,27 @@ def load_yale_embeddings(ctx, model):
     return embeddings
 
 
+def load_yale_embeddings_fast(model):
+    embeddings = dict()
+    detector = dlib.get_frontal_face_detector()
+    for path in os.listdir("./yalefaces"):
+        path = "./yalefaces/" + path
+        reference_image = cv2.imread(path)
+        detected_face = get_frontal_dlib(reference_image, detector,
+                                       (112, 112))
+        cv2.imshow('path', detected_face)
+        print(detected_face.shape)
+        __import__('ipdb').set_trace()
+        if cv2.waitKey(25) & 0xFF == ord('q'):
+            break
+        # reference_me = transform_frame(detected_face)
+        # reference_embedding = get_feature(model, reference_me)
+
+        # embeddings[path] = reference_embedding
+
+    return embeddings
+
+
 def check_against_embedding_db(db, to_check):
     greatest = (None, -29999)
     for name, db_embedding in db.items():
@@ -69,6 +92,7 @@ def check_against_embedding_db(db, to_check):
         if similarity_score > greatest[1]:
             greatest = (name, similarity_score)
     return greatest
+
 
 def main():
     # mx.test_utils.download('https://s3.amazonaws.com/onnx-model-zoo/arcface/resnet100.onnx')
