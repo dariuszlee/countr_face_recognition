@@ -4,7 +4,7 @@ import camera_details
 
 def calculate_image_blur(image):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    is_valid_threshold = 500
+    is_valid_threshold = 700
     blur = cv2.Laplacian(image, cv2.CV_64F).var()
     print(blur)
     return blur > is_valid_threshold

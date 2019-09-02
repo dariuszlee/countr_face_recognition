@@ -2,7 +2,8 @@ from flask import Flask, request
 import mxnet as mx
 import cv2
 from face_recognition import (check_against_embedding_db, get_feature,
-                              transform_frame, get_model, load_yale_embeddings)
+                              transform_frame, get_model, load_yale_embeddings,
+                              load_yale_embeddings_fast)
 
 
 class FaceRecognitionServer(Flask):
@@ -24,6 +25,7 @@ print("Finished Loading Model")
 
 print("Loading db")
 yale_faces = load_yale_embeddings(ctx, model)
+yale_faces.update(load_yale_embeddings_fast(model))
 print("Finished Loading db")
 
 @app.route('/video', methods=['GET'])
@@ -56,4 +58,4 @@ def index():
     return "Sucess"
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host="0.0.0.0", debug=False)

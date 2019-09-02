@@ -72,15 +72,15 @@ def load_yale_embeddings_fast(model):
         reference_image = cv2.imread(path)
         detected_face = get_frontal_dlib(reference_image, detector,
                                        (112, 112))
-        cv2.imshow('path', detected_face)
-        print(detected_face.shape)
-        __import__('ipdb').set_trace()
-        if cv2.waitKey(25) & 0xFF == ord('q'):
-            break
-        # reference_me = transform_frame(detected_face)
-        # reference_embedding = get_feature(model, reference_me)
+        # cv2.imshow('path', detected_face)
+        # print(detected_face.shape)
+        # if cv2.waitKey(25) & 0xFF == ord('q'):
+        #     break
+        reference_me = transform_frame(detected_face)
+        reference_embedding = get_feature(model, reference_me)
 
-        # embeddings[path] = reference_embedding
+        path = path + ".fast"
+        embeddings[path] = reference_embedding
 
     return embeddings
 
@@ -177,6 +177,7 @@ def main():
     # total_vals = sum([v for k, v in most_likely.items()])
     # total = most_likely['./yalefaces/trainer_reference.png']
     # print("With blur and frontal detection: ", total/ total_vals * 100)
+
 
 if __name__ == "__main__":
     main()
