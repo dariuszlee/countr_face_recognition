@@ -4,10 +4,22 @@ import camera_details
 
 def calculate_image_blur(image):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    is_valid_threshold = 700
+    is_valid_threshold = 300
     blur = cv2.Laplacian(image, cv2.CV_64F).var()
     print(blur)
     return blur > is_valid_threshold
+
+
+def get_detector():
+    return dlib.get_frontal_face_detector()
+
+
+def check_frontal_and_blur(frame, detector, desired_size):
+    is_frontal = get_frontal_dlib(frame, detector, desired_size)
+    if is_frontal is not None:
+        return calculate_image_blur(is_frontal)
+    return False
+
 
 def get_frontal_dlib(frame, detector, desired_size):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -20,6 +32,7 @@ def get_frontal_dlib(frame, detector, desired_size):
                           left:right]
         return new_frame
     return None
+
 
 def scale_rectangle(rect, desired_size):
     left, right = rect.left(), rect.right()
@@ -41,7 +54,6 @@ def scale_rectangle(rect, desired_size):
     bottom += to_add_to_both_sides
 
     return left, left + desired_size[0], top, top + desired_size[1]
-
 
 
 def main():

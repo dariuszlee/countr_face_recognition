@@ -4,6 +4,8 @@ import cv2
 from face_recognition import (check_against_embedding_db, get_feature,
                               transform_frame, get_model, load_yale_embeddings,
                               load_yale_embeddings_fast)
+import os
+import dlib_hog_face_detection
 
 
 class FaceRecognitionServer(Flask):
@@ -27,6 +29,10 @@ print("Loading db")
 yale_faces = load_yale_embeddings(ctx, model)
 yale_faces.update(load_yale_embeddings_fast(model))
 print("Finished Loading db")
+
+print("Loading detector")
+detector = dlib_hog_face_detection.get_detector()
+print("Finished loading detector")
 
 @app.route('/video', methods=['GET'])
 def index():
@@ -56,6 +62,21 @@ def index():
     cap.release()
     __import__('pprint').pprint(most_likely)
     return "Sucess"
+
+@app.route('/image_raw', methods=['GET'])
+def image_raw():
+    image_name = request.args.get('name')
+    if not os.path.exists(image_name):
+        return "Path doesn't exists"
+    img = cv2.imread(image_name)
+    img = dlib_hog_face_detection.get_frontal_dlib(img, detector, (112,112))
+    frame = transform_frame(img)
+    embedding = get_feature(model, frame)
+
+    most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
+    print(most_similar_embedding[0])
+    return "Success"
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=False)
