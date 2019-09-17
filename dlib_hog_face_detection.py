@@ -22,7 +22,6 @@ def check_frontal_and_blur(frame, detector, desired_size):
 
 
 def get_frontal_dlib(frame, detector, desired_size):
-    __import__('ipdb').set_trace()
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     detected = detector(gray, 0)
     if len(detected) != 0:
