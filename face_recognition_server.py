@@ -1,4 +1,5 @@
 from flask import Flask, request
+from arcface.mtcnn_detector import MtcnnDetector
 import mxnet as mx
 import cv2
 from face_recognition import (check_against_embedding_db, get_feature,
@@ -6,6 +7,7 @@ from face_recognition import (check_against_embedding_db, get_feature,
                               load_yale_embeddings_fast)
 import os
 import dlib_hog_face_detection
+from face_detection import get_input
 
 
 class FaceRecognitionServer(Flask):
@@ -30,9 +32,15 @@ yale_faces = load_yale_embeddings(ctx, model)
 yale_faces.update(load_yale_embeddings_fast(model))
 print("Finished Loading db")
 
-print("Loading detector")
+print("Loading fast detector")
 detector = dlib_hog_face_detection.get_detector()
-print("Finished loading detector")
+print("Finished loading fast detector")
+
+print("Loading dlib_detector")
+det_threshold = [0.6,0.7,0.8]
+detector = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1,
+                         accurate_landmark = True, threshold=det_threshold)
+print("Finished Loading dlib_detector")
 
 @app.route('/video', methods=['GET'])
 def index():
@@ -52,11 +60,6 @@ def index():
                 most_likely[most_similar_embedding[0]] += 1
             else:
                 most_likely[most_similar_embedding[0]] = 1
-            # cv2.imshow('Frame',frame)
-
-            # # Press Q on keyboard to  exit
-            # if cv2.waitKey(25) & 0xFF == ord('q'):
-            #     break
         else:
             break
     cap.release()
@@ -77,6 +80,16 @@ def image_raw():
     print(most_similar_embedding[0])
     return "Success"
 
+
+@app.route('/add_to_db', methods=['GET'])
+def add_to_db():
+    image_name = request.args.get('name')
+    img = cv2.imread(image_name)
+    processed = get_input(detector, img)
+
+@app.route('/dump_db', methods=['GET'])
+def dump_db():
+    __import__('json').dump(yale_faces, open("./db/db.dump", "w"))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=False)
