@@ -22,6 +22,7 @@ def check_frontal_and_blur(frame, detector, desired_size):
 
 
 def get_frontal_dlib(frame, detector, desired_size):
+    __import__('ipdb').set_trace()
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     detected = detector(gray, 0)
     if len(detected) != 0:
@@ -36,6 +37,8 @@ def get_frontal_dlib(frame, detector, desired_size):
 
 def scale_rectangle(rect, desired_size):
     left, right = rect.left(), rect.right()
+    if left < 0:
+        left = 0
     # If Odd
     if right - left % 2 == 1:
         right += 1
@@ -45,6 +48,8 @@ def scale_rectangle(rect, desired_size):
     right += to_add_to_both_sides
 
     top, bottom = rect.top(), rect.bottom()
+    if top < 0:
+        top = 0
     # If Odd
     if bottom - top % 2 == 1:
         bottom += 1

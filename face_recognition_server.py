@@ -28,19 +28,23 @@ model = get_model(ctx, model_name)
 print("Finished Loading Model")
 
 print("Loading db")
-yale_faces = load_yale_embeddings(ctx, model)
-yale_faces.update(load_yale_embeddings_fast(model))
+if os.path.exists("db/dump.pkl"):
+    yale_faces = __import__('pickle').load(open("db/dump.pkl",
+                                                "rb"))
+else:
+    yale_faces = load_yale_embeddings(ctx, model)
+# yale_faces.update(load_yale_embeddings_fast(model))
 print("Finished Loading db")
 
 print("Loading fast detector")
 detector = dlib_hog_face_detection.get_detector()
 print("Finished loading fast detector")
 
-print("Loading dlib_detector")
+print("Loading neural_net detector")
 det_threshold = [0.6,0.7,0.8]
-detector = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1,
+detector_mtcnn = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1,
                          accurate_landmark = True, threshold=det_threshold)
-print("Finished Loading dlib_detector")
+print("Finished Loading neural_net detector")
 
 @app.route('/video', methods=['GET'])
 def index():
@@ -85,11 +89,24 @@ def image_raw():
 def add_to_db():
     image_name = request.args.get('name')
     img = cv2.imread(image_name)
-    processed = get_input(detector, img)
+    processed = get_input(detector_mtcnn, img)
+    frame = transform_frame(processed)
+    embedding = get_feature(model, frame)
+    yale_faces[image_name] = embedding
+    return "Success"
+
 
 @app.route('/dump_db', methods=['GET'])
 def dump_db():
-    __import__('json').dump(yale_faces, open("./db/db.dump", "w"))
+    __import__('pickle').dump(yale_faces, open("./db/dump.pkl", "wb"))
+    print("Keys in db:", list(yale_faces.keys()))
+    return "Success"
+
+@app.route('/dump_db', methods=['GET'])
+def clear_db():
+    yale_faces = {}
+    return "Success"
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=False)

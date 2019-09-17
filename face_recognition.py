@@ -58,7 +58,6 @@ def load_yale_embeddings(ctx, model):
         processed = get_input(detector, reference_image)
         reference_me = transform_frame(processed)
         reference_embedding = get_feature(model, reference_me)
-
         embeddings[path] = reference_embedding
 
     return embeddings
