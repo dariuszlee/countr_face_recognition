@@ -64,4 +64,7 @@ Makes life easier....
 1. Send Avi Demos To Dr. Scheffer
 2. Performance Checks: 
     - Raspberry Pi: What can we move on and off?
-    - 
+
+# Week 16.09.2019
+1. Train similarity embedding threshold
+2. Ensure color format/file format are similar

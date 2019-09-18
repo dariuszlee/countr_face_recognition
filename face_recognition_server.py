@@ -18,8 +18,10 @@ class FaceRecognitionServer(Flask):
 
 app = FaceRecognitionServer(__name__)
 if len(mx.test_utils.list_gpus())==0:
+    print("MXNET: Using Cpu Mode")
     ctx = mx.cpu()
 else:
+    print("MXNET: Using GPU Mode")
     ctx = mx.gpu(0)
 
 model_name = "./resnet100.onnx"
@@ -29,9 +31,11 @@ print("Finished Loading Model")
 
 print("Loading db")
 if os.path.exists("db/dump.pkl"):
+    print("DB: Loading from file...")
     yale_faces = __import__('pickle').load(open("db/dump.pkl",
                                                 "rb"))
 else:
+    print("DB: Recomputing")
     yale_faces = load_yale_embeddings(ctx, model)
 # yale_faces.update(load_yale_embeddings_fast(model))
 print("Finished Loading db")
@@ -70,29 +74,78 @@ def index():
     __import__('pprint').pprint(most_likely)
     return "Sucess"
 
+@app.route('/image_ready', methods=['GET'])
+def image_ready():
+    """Same as image_raw but no face detection"""
+    try:
+        image_name = request.args.get('name')
+        if not os.path.exists(image_name):
+            return "Path doesn't exists"
+        img = cv2.imread(image_name)
+        frame = transform_frame(img)
+        embedding = get_feature(model, frame)
+
+        most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
+        print(most_similar_embedding[0])
+    except Exception as e:
+        print(e)
+        return "Exception: Not found"
+    return most_similar_embedding[0]
+
+
+@app.route('/image_raw_mtcnn', methods=['GET'])
+def image_raw_mtcnn():
+    try:
+        image_name = request.args.get('name')
+        if not os.path.exists(image_name):
+            return "Path doesn't exists"
+        img = cv2.imread(image_name)
+        img = get_input(detector_mtcnn, img)
+        frame = transform_frame(img)
+        embedding = get_feature(model, frame)
+
+        most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
+        print(most_similar_embedding[0])
+    except Exception as e:
+        print(e)
+        return "Exception: Not found"
+    return most_similar_embedding[0]
+
+
 @app.route('/image_raw', methods=['GET'])
 def image_raw():
-    image_name = request.args.get('name')
-    if not os.path.exists(image_name):
-        return "Path doesn't exists"
-    img = cv2.imread(image_name)
-    img = dlib_hog_face_detection.get_frontal_dlib(img, detector, (112,112))
-    frame = transform_frame(img)
-    embedding = get_feature(model, frame)
+    try:
+        image_name = request.args.get('name')
+        if not os.path.exists(image_name):
+            return "Path doesn't exists"
+        img = cv2.imread(image_name)
+        img = dlib_hog_face_detection.get_frontal_dlib(img, detector, (112,112))
+        frame = transform_frame(img)
+        embedding = get_feature(model, frame)
 
-    most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
-    print(most_similar_embedding[0])
-    return "Success"
+        most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
+        print(most_similar_embedding[0])
+    except Exception as e:
+        print(e)
+        return "Exception: Not found"
+    return most_similar_embedding[0]
 
 
 @app.route('/add_to_db', methods=['GET'])
 def add_to_db():
-    image_name = request.args.get('name')
-    img = cv2.imread(image_name)
-    processed = get_input(detector_mtcnn, img)
-    frame = transform_frame(processed)
-    embedding = get_feature(model, frame)
-    yale_faces[image_name] = embedding
+    global detector_mtcnn
+    try:
+        image_name = request.args.get('name')
+        if not os.path.exists(image_name):
+            return "Path doesn't exists"
+        img = cv2.imread(image_name)
+        img = dlib_hog_face_detection.get_frontal_dlib(img, detector, (112,112))
+        frame = transform_frame(img)
+        embedding = get_feature(model, frame)
+        yale_faces[image_name] = embedding
+    except Exception as e:
+        print(e)
+        return "Failure"
     return "Success"
 
 
@@ -102,7 +155,7 @@ def dump_db():
     print("Keys in db:", list(yale_faces.keys()))
     return "Success"
 
-@app.route('/dump_db', methods=['GET'])
+@app.route('/clear_db', methods=['GET'])
 def clear_db():
     yale_faces = {}
     return "Success"

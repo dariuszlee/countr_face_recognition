@@ -84,7 +84,8 @@ def get_input(detector,face_img):
     # return aligned
 
 
-if __name__ == "__main__":
+def main_1():
+
     cap = cv2.VideoCapture("./outpy.avi")
 
     frames = []
@@ -141,3 +142,30 @@ if __name__ == "__main__":
 
     # When everything done, release the video capture object
     cap.release()
+
+def main_2():
+    """
+
+    """
+    if len(mx.test_utils.list_gpus())==0:
+        ctx = mx.cpu()
+    else:
+        ctx = mx.gpu(0)
+    # Configure face detector
+    det_threshold = [0.6,0.7,0.8]
+    detector = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1, accurate_landmark = True, threshold=det_threshold)
+
+    import os
+    from face_recognition import transform_frame
+    for directory, sub, file_names in os.walk("./example_face_from_countr/ExampleDataFaceRecognition/ID_Images"):
+        for file_name in file_names:
+            full_path = directory + "/" + file_name
+            img = cv2.imread(full_path)
+            img = get_input(detector, img)
+            frame = transform_frame(img)
+            cv2.imshow("da", img)
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                break
+
+if __name__ == "__main__":
+    main_2()
