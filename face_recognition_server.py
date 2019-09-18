@@ -37,6 +37,13 @@ if os.path.exists("db/dump.pkl"):
 else:
     print("DB: Recomputing")
     yale_faces = load_yale_embeddings(ctx, model)
+
+if os.path.exists("db/dump_img_data.pkl"):
+    print("DB: Loading from file...")
+    yale_faces_data = __import__('pickle').load(open("db/dump_img_data.pkl",
+                                                     "rb"))
+else:
+    yale_faces_data = {}
 # yale_faces.update(load_yale_embeddings_fast(model))
 print("Finished Loading db")
 
@@ -95,6 +102,7 @@ def image_ready():
 
 @app.route('/image_raw_mtcnn', methods=['GET'])
 def image_raw_mtcnn():
+    global yale_faces
     try:
         image_name = request.args.get('name')
         if not os.path.exists(image_name):
@@ -105,15 +113,15 @@ def image_raw_mtcnn():
         embedding = get_feature(model, frame)
 
         most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
-        print(most_similar_embedding[0])
+        print(most_similar_embedding)
     except Exception as e:
         print(e)
         return "Exception: Not found"
-    return most_similar_embedding[0]
-
+    return str(most_similar_embedding)
 
 @app.route('/image_raw', methods=['GET'])
 def image_raw():
+    global yale_faces
     try:
         image_name = request.args.get('name')
         if not os.path.exists(image_name):
@@ -124,16 +132,17 @@ def image_raw():
         embedding = get_feature(model, frame)
 
         most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
-        print(most_similar_embedding[0])
+        add_to_scores(most_similar_embedding)
     except Exception as e:
         print(e)
         return "Exception: Not found"
-    return most_similar_embedding[0]
+    return str(most_similar_embedding)
 
 
 @app.route('/add_to_db', methods=['GET'])
 def add_to_db():
     global detector_mtcnn
+    global yale_faces
     try:
         image_name = request.args.get('name')
         if not os.path.exists(image_name):
@@ -143,6 +152,7 @@ def add_to_db():
         frame = transform_frame(img)
         embedding = get_feature(model, frame)
         yale_faces[image_name] = embedding
+        yale_faces_data[image_name] = img
     except Exception as e:
         print(e)
         return "Failure"
@@ -151,15 +161,43 @@ def add_to_db():
 
 @app.route('/dump_db', methods=['GET'])
 def dump_db():
+    global yale_faces
+    global yale_faces_data
     __import__('pickle').dump(yale_faces, open("./db/dump.pkl", "wb"))
+    __import__('pickle').dump(yale_faces_data, open("./db/dump_img_data.pkl", "wb"))
     print("Keys in db:", list(yale_faces.keys()))
     return "Success"
 
 @app.route('/clear_db', methods=['GET'])
 def clear_db():
+    global yale_faces
     yale_faces = {}
     return "Success"
 
+@app.route('/reload_modules', methods=['GET'])
+def reload_modules():
+    return "Success"
+
+scores = {}
+def add_to_scores(similarities):
+    global scores
+    for k,v in similarities:
+        current_score = scores.get(k, 0)
+        current_score += v
+        scores[k] = current_score
+
+@app.route('/get_score', methods=['GET'])
+def get_score():
+    global scores
+    scores_list = list(scores.items())
+    sorted_scores = sorted(scores_list, key=lambda sim: sim[1], reverse=True)
+    return str(sorted_scores)
+
+@app.route('/clear_score', methods=['GET'])
+def clear_score():
+    global scores
+    scores = {}
+    return "Success"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=False)

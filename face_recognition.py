@@ -85,12 +85,12 @@ def load_yale_embeddings_fast(model):
 
 
 def check_against_embedding_db(db, to_check):
-    greatest = (None, -29999)
+    similarities = []
     for name, db_embedding in db.items():
         similarity_score = np.dot(db_embedding, to_check)
-        if similarity_score > greatest[1]:
-            greatest = (name, similarity_score)
-    return greatest
+        similarities.append((name, similarity_score))
+    similarities = sorted(similarities, key=lambda sim: sim[1], reverse=True)
+    return similarities[0:5]
 
 
 def main():

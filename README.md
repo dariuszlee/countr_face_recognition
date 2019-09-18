@@ -68,3 +68,4 @@ Makes life easier....
 # Week 16.09.2019
 1. Train similarity embedding threshold
 2. Ensure color format/file format are similar
+3. Better debug mode. Add processed image to database to check after.
