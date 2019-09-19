@@ -52,9 +52,11 @@ detector = dlib_hog_face_detection.get_detector()
 print("Finished loading fast detector")
 
 print("Loading neural_net detector")
-det_threshold = [0.6,0.7,0.8]
-detector_mtcnn = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1,
-                         accurate_landmark = True, threshold=det_threshold)
+# det_threshold = [0.6,0.7,0.8]
+# detector_mtcnn = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1,
+#                          accurate_landmark = True, threshold=det_threshold)
+import queue
+msg_queue = queue.Queue()
 print("Finished Loading neural_net detector")
 
 @app.route('/video', methods=['GET'])
@@ -93,11 +95,11 @@ def image_ready():
         embedding = get_feature(model, frame)
 
         most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
-        print(most_similar_embedding[0])
+        add_to_scores(most_similar_embedding)
     except Exception as e:
         print(e)
         return "Exception: Not found"
-    return most_similar_embedding[0]
+    return str(most_similar_embedding)
 
 
 @app.route('/image_raw_mtcnn', methods=['GET'])
@@ -159,6 +161,19 @@ def add_to_db():
     return "Success"
 
 
+@app.route('/add_to_db_queue', methods=['GET'])
+def add_to_db_queue():
+    try:
+        image_name = request.args.get('name')
+        if not os.path.exists(image_name):
+            return "Path doesn't exists"
+        msg_queue.put(image_name)
+    except Exception as e:
+        print(e)
+        return "Failure"
+    return "Success"
+
+
 @app.route('/dump_db', methods=['GET'])
 def dump_db():
     global yale_faces
@@ -172,6 +187,7 @@ def dump_db():
 def clear_db():
     global yale_faces
     yale_faces = {}
+    yale_faces_data = {}
     return "Success"
 
 @app.route('/reload_modules', methods=['GET'])
@@ -199,5 +215,36 @@ def clear_score():
     scores = {}
     return "Success"
 
+
+def face_detection_worker():
+    if len(mx.test_utils.list_gpus())==0:
+        ctx = mx.cpu()
+    else:
+        ctx = mx.gpu(0)
+    # Configure face detector
+    det_threshold = [0.6,0.7,0.8]
+    detector = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1, accurate_landmark = True, threshold=det_threshold)
+    while True:
+        image_name = msg_queue.get()
+        if not os.path.exists(image_name):
+            print("Image ", image_name, " doesn't exist.")
+            continue
+        if image_name is None:
+            break
+        try:
+            print("Trying to load image: ", image_name)
+            img = cv2.imread(image_name)
+            img_2 = get_input(detector, img)
+            frame = transform_frame(img_2)
+            embedding = get_feature(model, frame)
+            yale_faces[image_name] = embedding
+            yale_faces_data[image_name] = img_2
+        except Exception as e:
+            print(e)
+
+
 if __name__ == "__main__":
+    import threading
+    thrd = threading.Thread(target=face_detection_worker)
+    thrd.start()
     app.run(host="0.0.0.0", debug=False)
