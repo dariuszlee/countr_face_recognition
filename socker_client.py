@@ -1,0 +1,32 @@
+import socket
+import pickle
+import sys
+import cv2
+
+def main():
+    soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    host = "127.0.0.1"
+    port = 8100
+    try:
+        soc.connect((host, port))
+    except:
+        print("Connection Error")
+        sys.exit()
+        print("Please enter 'quit' to exit")
+
+    video_capture = cv2.VideoCapture("/dev/video2")
+    if not video_capture.isOpened():
+        raise Exception("Could not open video device")
+    while True:
+        ret, frame = video_capture.read()
+        if ret:
+            ser_frame = pickle.dumps(frame)
+            soc.sendall(ser_frame)
+            if soc.recv(5120).decode("utf8") == "-":
+                pass # null operation
+            # message = input(" -> ")
+            # soc.send(b'--quit--')
+
+
+if __name__ == "__main__":
+    main()
