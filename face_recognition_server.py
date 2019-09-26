@@ -118,7 +118,7 @@ def image_raw_mtcnn():
         embedding = get_feature(model, frame)
 
         most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
-        print(most_similar_embedding)
+        add_to_scores(most_similar_embedding)
     except Exception as e:
         print(e)
         return "Exception: Not found"

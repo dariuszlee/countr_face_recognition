@@ -69,3 +69,8 @@ Makes life easier....
 1. Train similarity embedding threshold
 2. Ensure color format/file format are similar
 3. Better debug mode. Add processed image to database to check after.
+
+# Week 24.09.2019
+1. Handle multiple people in camera? what happens
+2. Handle live stream of camers? Handle multiple cameras?
+3. Definitive performance metrics with GPU server
