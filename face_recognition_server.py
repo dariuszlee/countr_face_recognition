@@ -219,7 +219,7 @@ def get_score():
     global scores
     scores_list = list(scores.items())
     sorted_scores = sorted(scores_list, key=lambda sim: sim[1], reverse=True)
-    return str(sorted_scores)
+    return str(sorted_scores[0:2])
 
 @app.route('/clear_score', methods=['GET'])
 def clear_score():
@@ -232,6 +232,9 @@ def test_func(path):
     global detector_mtcnn
     if os.path.exists(path):
         img = cv2.imread(path)
+        if img is None:
+            print("Image {} cannot be found..".format(path))
+            return None
         face_server = get_input(detector_mtcnn, img)
         return face_server
     else:
