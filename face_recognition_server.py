@@ -8,6 +8,7 @@ from face_recognition import (check_against_embedding_db, get_feature,
 import os
 import dlib_hog_face_detection
 from face_detection import get_input
+import multiprocessing as mp
 
 
 class FaceRecognitionServer(Flask):
@@ -51,13 +52,12 @@ print("Loading fast detector")
 detector = dlib_hog_face_detection.get_detector()
 print("Finished loading fast detector")
 
-print("Loading neural_net detector")
-# det_threshold = [0.6,0.7,0.8]
+# print("Loading neural_net detector")
+det_threshold = [0.6,0.7,0.8]
+detector_mtcnn = None
 # detector_mtcnn = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1,
 #                          accurate_landmark = True, threshold=det_threshold)
-import queue
-msg_queue = queue.Queue()
-print("Finished Loading neural_net detector")
+# print("Finished Loading neural_net detector")
 
 @app.route('/video', methods=['GET'])
 def index():
@@ -104,14 +104,17 @@ def image_ready():
 
 @app.route('/image_raw_mtcnn', methods=['GET'])
 def image_raw_mtcnn():
+    global q_send, q_return
     global yale_faces
     try:
         image_name = request.args.get('name')
         if not os.path.exists(image_name):
             return "Path doesn't exists"
-        img = cv2.imread(image_name)
-        img = get_input(detector_mtcnn, img)
-        frame = transform_frame(img)
+        q_send.put(image_name)
+        frame = q_return.get()
+        if frame is None:
+            return "Face detection failed"
+        frame = transform_frame(frame)
         embedding = get_feature(model, frame)
 
         most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
@@ -163,11 +166,20 @@ def add_to_db():
 
 @app.route('/add_to_db_queue', methods=['GET'])
 def add_to_db_queue():
+    global q_send, q_return
     try:
         image_name = request.args.get('name')
         if not os.path.exists(image_name):
             return "Path doesn't exists"
-        msg_queue.put(image_name)
+        q_send.put(image_name)
+        img = q_return.get()
+        if img is None:
+            return "Face detection failed"
+        frame = transform_frame(img)
+
+        embedding = get_feature(model, frame)
+        yale_faces[image_name] = embedding
+        yale_faces_data[image_name] = img
     except Exception as e:
         print(e)
         return "Failure"
@@ -216,35 +228,37 @@ def clear_score():
     return "Success"
 
 
-def face_detection_worker():
-    if len(mx.test_utils.list_gpus())==0:
-        ctx = mx.cpu()
+def test_func(path):
+    global detector_mtcnn
+    if os.path.exists(path):
+        img = cv2.imread(path)
+        face_server = get_input(detector_mtcnn, img)
+        return face_server
     else:
-        ctx = mx.gpu(0)
-    # Configure face detector
-    det_threshold = [0.6,0.7,0.8]
-    detector = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1, accurate_landmark = True, threshold=det_threshold)
+        print("path {} doesn't exist.".format(path))
+
+
+def init_pool():
+    global detector_mtcnn
+    detector_mtcnn = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1,
+                                   accurate_landmark = True, threshold=det_threshold)
+
+def foo(q, q_return):
+    global detector_mtcnn
+    if detector_mtcnn is None:
+        init_pool()
     while True:
-        image_name = msg_queue.get()
-        if not os.path.exists(image_name):
-            print("Image ", image_name, " doesn't exist.")
-            continue
-        if image_name is None:
-            break
-        try:
-            print("Trying to load image: ", image_name)
-            img = cv2.imread(image_name)
-            img_2 = get_input(detector, img)
-            frame = transform_frame(img_2)
-            embedding = get_feature(model, frame)
-            yale_faces[image_name] = embedding
-            yale_faces_data[image_name] = img_2
-        except Exception as e:
-            print(e)
+        data = q.get()
+        frame = test_func(data)
+        q_return.put(frame)
 
-
+q_send = None
+q_return = None
 if __name__ == "__main__":
-    import threading
-    thrd = threading.Thread(target=face_detection_worker)
-    thrd.start()
+    mp.set_start_method('spawn')
+    q_send = mp.Queue()
+    q_return = mp.Queue()
+    p = mp.Process(target=foo, args=(q_send,q_return))
+    p.start()
     app.run(host="0.0.0.0", debug=False)
+    p.join()
