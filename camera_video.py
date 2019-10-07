@@ -63,10 +63,10 @@ def begin_capture(video_num, output_file, num_to_find=100):
         cv2.destroyAllWindows()
 
 
-@profile
 def store_dlib_images(input_dir, output_dir):
     detector = get_detector()
     for path in os.listdir(input_dir):
+        print(path)
         full_input_path = input_dir + "/" + path
         full_output_path = output_dir + "/" + path
 
