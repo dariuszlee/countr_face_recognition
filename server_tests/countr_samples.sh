@@ -20,7 +20,7 @@ function test_persons(){
 }
 
 function load_yale(){
-    echo "Loading yalefaces DB for noise:"
+    echo "Loading yalefaces DB for noise..."
     for yale_face in $(ls $COUNTR_HOME/yalefaces); do
         curl --silent "http://0.0.0.0:5000/add_to_db?name=yalefaces/$yale_face" > /dev/null
     done
@@ -28,11 +28,10 @@ function load_yale(){
 }
 
 function load_countr(){
-    echo "Loading countr faces DB:"
+    echo "Loading countr faces DB..."
     for countr_face in $(ls $COUNTR_HOME/example_face_from_countr/ExampleDataFaceRecognition/ID_Images); do
         curl --silent "http://0.0.0.0:5000/add_to_db?name=$COUNTR_ID_DIR/$countr_face" > /dev/null
     done
-    echo ""
 }
 
 function load_db(){

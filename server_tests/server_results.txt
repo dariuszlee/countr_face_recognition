@@ -1,0 +1,55 @@
+Loading yalefaces DB for noise:
+
+Loading countr faces DB:
+
+Starting scoring of Alex
+[('example_face_from_countr/ExampleDataFaceRecognition/ID_Images/AlexID.png', 22.342858910560608), ('/home/dlee/rcount_
+face_recognition/example_face_from_countr/ExampleDataFaceRecognition/ID_Images/JorgP.png', 4.697349548339844)]
+
+Starting scoring of Bjorn
+[('example_face_from_countr/ExampleDataFaceRecognition/ID_Images/BjornID.png', 17.38881802558899), ('example_face_from_
+countr/ExampleDataFaceRecognition/ID_Images/ChristianeID.png', 4.285858392715454)]
+
+Starting scoring of Christaina
+[('example_face_from_countr/ExampleDataFaceRecognition/ID_Images/ChristianeID.png', 10.72035476565361), ('example_face_
+from_countr/ExampleDataFaceRecognition/ID_Images/JannikID.png', 2.534513548016548)]
+
+Starting scoring of Christoph
+[('example_face_from_countr/ExampleDataFaceRecognition/ID_Images/ChristophID.png', 1.953845351934433), ('/home/dlee/rco
+unt_face_recognition/example_face_from_countr/ExampleDataFaceRecognition/ID_Images/PeterDl.png', 0.7344490885734558)]
+
+Starting scoring of Detlef
+[('example_face_from_countr/ExampleDataFaceRecognition/ID_Images/DetlefID.png', 14.16766831278801), ('/home/dlee/rcount
+_face_recognition/example_face_from_countr/ExampleDataFaceRecognition/ID_Images/MichaID.png', 3.597397141158581)]
+
+Starting scoring of Frank
+[('example_face_from_countr/ExampleDataFaceRecognition/ID_Images/FrankID.png', 7.478613257408142), ('example_face_from_
+countr/ExampleDataFaceRecognition/ID_Images/FrankDL.png', 6.82954341173172)]
+
+Starting scoring of Jannik
+[('example_face_from_countr/ExampleDataFaceRecognition/ID_Images/JannikID.png', 30.62914925813675), ('example_face_from
+_countr/ExampleDataFaceRecognition/ID_Images/MarcID.png', 13.474791213870049)]
+
+Starting scoring of JorgP
+[('example_face_from_countr/ExampleDataFaceRecognition/ID_Images/JorgP.png', 29.119936227798462), ('example_face_from_c
+ountr/ExampleDataFaceRecognition/ID_Images/JorgID.png', 27.296749532222748)]
+
+Starting scoring of Marc
+[('example_face_from_countr/ExampleDataFaceRecognition/ID_Images/MarcID.png', 4.804212272167206), ('example_face_from_c
+ountr/ExampleDataFaceRecognition/ID_Images/MichaID.png', 0.8269540965557098)]
+
+Starting scoring of Micha
+[('example_face_from_countr/ExampleDataFaceRecognition/ID_Images/MichaID.png', 34.79727441072464), ('example_face_from_
+countr/ExampleDataFaceRecognition/ID_Images/MichaDL.png', 26.568030416965485)]
+
+Starting scoring of Peter
+[('example_face_from_countr/ExampleDataFaceRecognition/ID_Images/PeterDl.png', 0.875800371170044), ('/home/dlee/rcount_
+face_recognition/example_face_from_countr/ExampleDataFaceRecognition/ID_Images/JannikID.png', 0.3116447627544403)]
+
+Starting scoring of Thomas
+[('example_face_from_countr/ExampleDataFaceRecognition/ID_Images/ThomasID.png', 12.948165878653526), ('example_face_fro
+m_countr/ExampleDataFaceRecognition/ID_Images/FrankDL.png', 1.6589273437857628)]
+
+Starting scoring of Torsten
+[('example_face_from_countr/ExampleDataFaceRecognition/ID_Images/TorstenID.png', 19.306421846151352), ('example_face_fr
+om_countr/ExampleDataFaceRecognition/ID_Images/TorstenDL.png', 13.360312551259995)]
