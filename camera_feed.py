@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return "Working..."
 
 def gen():
     video_capture = cv2.VideoCapture("/dev/video0")
