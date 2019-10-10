@@ -18,43 +18,43 @@ class FaceRecognitionServer(Flask):
         super().__init__(*args, **kwargs)
 
 app = FaceRecognitionServer(__name__)
-if len(mx.test_utils.list_gpus())==0:
-    print("MXNET: Using Cpu Mode")
-    ctx = mx.cpu()
-else:
-    print("MXNET: Using GPU Mode")
-    ctx = mx.gpu(0)
+# if len(mx.test_utils.list_gpus())==0:
+#     print("MXNET: Using Cpu Mode")
+#     ctx = mx.cpu()
+# else:
+#     print("MXNET: Using GPU Mode")
+#     ctx = mx.gpu(0)
 
-model_name = "./resnet100.onnx"
-print("Loading Model")
-model = get_model(ctx, model_name)
-print("Finished Loading Model")
+# model_name = "./resnet100.onnx"
+# print("Loading Model")
+# model = get_model(ctx, model_name)
+# print("Finished Loading Model")
 
-print("Loading db")
-if os.path.exists("db/dump.pkl"):
-    print("DB: Loading from file...")
-    yale_faces = __import__('pickle').load(open("db/dump.pkl",
-                                                "rb"))
-else:
-    print("DB: Recomputing")
-    yale_faces = load_yale_embeddings(ctx, model)
+# print("Loading db")
+# if os.path.exists("db/dump.pkl"):
+#     print("DB: Loading from file...")
+#     yale_faces = __import__('pickle').load(open("db/dump.pkl",
+#                                                 "rb"))
+# else:
+#     print("DB: Recomputing")
+#     yale_faces = load_yale_embeddings(ctx, model)
 
-if os.path.exists("db/dump_img_data.pkl"):
-    print("DB: Loading from file...")
-    yale_faces_data = __import__('pickle').load(open("db/dump_img_data.pkl",
-                                                     "rb"))
-else:
-    yale_faces_data = {}
-# yale_faces.update(load_yale_embeddings_fast(model))
-print("Finished Loading db")
+# if os.path.exists("db/dump_img_data.pkl"):
+#     print("DB: Loading from file...")
+#     yale_faces_data = __import__('pickle').load(open("db/dump_img_data.pkl",
+#                                                      "rb"))
+# else:
+#     yale_faces_data = {}
+# # yale_faces.update(load_yale_embeddings_fast(model))
+# print("Finished Loading db")
 
-print("Loading fast detector")
-detector = dlib_hog_face_detection.get_detector()
-print("Finished loading fast detector")
+# print("Loading fast detector")
+# detector = dlib_hog_face_detection.get_detector()
+# print("Finished loading fast detector")
 
-# print("Loading neural_net detector")
-det_threshold = [0.6,0.7,0.8]
-detector_mtcnn = None
+# # print("Loading neural_net detector")
+# det_threshold = [0.6,0.7,0.8]
+# detector_mtcnn = None
 # detector_mtcnn = MtcnnDetector(model_folder="./mtcnn_model", ctx=ctx, num_worker=1,
 #                          accurate_landmark = True, threshold=det_threshold)
 # print("Finished Loading neural_net detector")
@@ -100,6 +100,40 @@ def image_ready():
         print(e)
         return "Exception: Not found"
     return str(most_similar_embedding)
+
+
+import numpy as np
+counter = 0
+@app.route('/feed_video', methods=['POST'])
+def feed_video():
+    global q_send, q_return
+    global yale_faces
+    global counter
+    try:
+        # cv2.imdecode
+        raw_data = request.files['image'].stream.read()
+        data = np.fromstring(raw_data, dtype=np.uint8)
+        img = cv2.imdecode(data, cv2.IMREAD_COLOR)
+        counter += 1
+        if counter % 10 == 0:
+            cv2.imwrite("img_{}.jpg".format(counter), img)
+        return "Received"
+        # image_name = request.args.get('name')
+        # if not os.path.exists(image_name):
+        #     return "Path doesn't exists"
+        # q_send.put(image_name)
+        # frame = q_return.get()
+        # if frame is None:
+        #     return "Face detection failed"
+        # frame = transform_frame(frame)
+        # embedding = get_feature(model, frame)
+
+        # most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
+        # add_to_scores(most_similar_embedding)
+    except Exception as e:
+        print(e)
+        return "Did not work"
+    # return str(most_similar_embedding)
 
 
 @app.route('/image_raw_mtcnn', methods=['GET'])
@@ -226,7 +260,6 @@ def clear_score():
     global scores
     scores = {}
     return "Success"
-
 
 def test_func(path):
     global detector_mtcnn
