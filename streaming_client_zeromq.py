@@ -2,6 +2,7 @@ import pickle
 import zmq
 import time
 import cv2
+from message_types import MESSAGE_CAMERA_FEED, MESSAGE_CLEAR_SESSION
 
 context = zmq.Context()
 
@@ -32,7 +33,7 @@ try:
         # send_to_server(frame, to_send_to)
         _, img_encoding = cv2.imencode('.jpg', frame)
         img_encoding_to_string = img_encoding.tostring()
-        message = { "type": "data", 
+        message = { "type": MESSAGE_CAMERA_FEED,
                 "session": "session1" 
                 }
         message['data'] = img_encoding_to_string

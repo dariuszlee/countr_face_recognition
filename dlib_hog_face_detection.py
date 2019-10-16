@@ -1,5 +1,5 @@
 import cv2
-import dlib
+# import dlib
 import camera_details
 
 def calculate_image_blur(image):
@@ -11,7 +11,8 @@ def calculate_image_blur(image):
 
 
 def get_detector():
-    return dlib.get_frontal_face_detector()
+    # return dlib.get_frontal_face_detector()
+    return None
 
 
 def check_frontal_and_blur(frame, detector, desired_size):
@@ -62,7 +63,7 @@ def scale_rectangle(rect, desired_size):
 
 def main():
     cap = cv2.VideoCapture("./face_capture.avi")
-    detector = dlib.get_frontal_face_detector()
+    detector = get_detector()
     desired_size = (112, 112)
 
     valids = []

@@ -73,12 +73,17 @@ def get_input(detector,face_img):
     if ret is None:
         return None
     bbox, points = ret
+    print("bbox", len(bbox))
     if bbox.shape[0]==0:
         return None
-    bbox = bbox[0,0:4]
-    points = points[0,:].reshape((2,5)).T
-    # Call preprocess() to generate aligned images
-    nimg = preprocess(face_img, bbox, points, image_size='112,112')
+    nimg = []
+    for bb, po in zip(bbox, points):
+        bb = bb[0:4]
+        po = po[:].reshape((2,5)).T
+        # Call preprocess() to generate aligned images
+        nimg_temp = preprocess(face_img, bb, po, image_size='112,112')
+        nimg.append(nimg_temp)
+        
     return nimg
     # nimg = cv2.cvtColor(nimg, cv2.COLOR_BGR2RGB)
     # aligned = np.transpose(nimg, (2,0,1))

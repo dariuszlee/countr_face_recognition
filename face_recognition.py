@@ -1,5 +1,4 @@
 import cv2
-import dlib
 from dlib_hog_face_detection import get_frontal_dlib
 import os
 from arcface.mtcnn_detector import MtcnnDetector
@@ -65,7 +64,7 @@ def load_yale_embeddings(ctx, model):
 
 def load_yale_embeddings_fast(model):
     embeddings = dict()
-    detector = dlib.get_frontal_face_detector()
+    detector = None
     for path in os.listdir("./yalefaces"):
         path = "./yalefaces/" + path
         reference_image = cv2.imread(path)
