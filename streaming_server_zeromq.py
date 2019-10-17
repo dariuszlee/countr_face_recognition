@@ -78,6 +78,20 @@ try:
 except:
     pass
 
+def process(detector_mtcnn, model, message_data, yale_faces, message_session):
+    data = np.frombuffer(message_data, dtype=np.uint8)
+    img = cv2.imdecode(data, cv2.IMREAD_COLOR)
+
+    face_server = get_input(detector_mtcnn, img)
+    if face_server == None:
+        return None
+
+    for face in face_server:
+        frame = transform_frame(face)
+        embedding = get_feature(model, frame)
+        most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
+        add_to_scores(most_similar_embedding, message_session)
+
 while True:
     message = socket.recv()
     message_decoded = pickle.loads(message)
@@ -88,19 +102,7 @@ while True:
     if message_type == MESSAGE_CLEAR_SESSION:
         del message_session['session']
     elif message_type == MESSAGE_CAMERA_FEED:
-        data = np.frombuffer(message_data, dtype=np.uint8)
-        img = cv2.imdecode(data, cv2.IMREAD_COLOR)
-
-        face_server = get_input(detector_mtcnn, img)
-        if face_server == None:
-            socket.send(b"")
-            continue
-        for face in face_server:
-            frame = transform_frame(face)
-            embedding = get_feature(model, frame)
-
-            most_similar_embedding = check_against_embedding_db(yale_faces, embedding)
-            add_to_scores(most_similar_embedding, message_session)
+        process(detector_mtcnn, model, message_data, yale_faces, message_session)
     else:
         print("Invalid message type: ", message_type)
     socket.send(b"")

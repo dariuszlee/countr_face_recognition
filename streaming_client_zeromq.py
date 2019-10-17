@@ -3,13 +3,22 @@ import zmq
 import time
 import cv2
 from message_types import MESSAGE_CAMERA_FEED, MESSAGE_CLEAR_SESSION
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-i', dest='ip_addr', metavar='i', type=str)
+args = parser.parse_args()
 
 context = zmq.Context()
 
 #  Socket to talk to server
 print("Connecting to hello world server")
 socket = context.socket(zmq.REQ)
-socket.connect("tcp://192.168.0.168:5555")
+if args.ip_addr is not None:
+    addr = "tcp://" + args.ip_addr
+    socket.connect()
+else:
+    socket.connect("tcp://localhost:5555")
 
 video_device = "/dev/video0"
 
