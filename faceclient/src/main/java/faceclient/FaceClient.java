@@ -2,7 +2,6 @@ package faceclient;
 
 import faceclient.IFaceClient;
 
-import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.opencv.core.Core;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.core.Mat;
@@ -34,7 +33,6 @@ public class FaceClient implements IFaceClient
     public void Identify(){
         // frameGrabber = new VideoInputFrameGrabber(0);
         frameGrabber = new VideoCapture(0);
-        OpenCVFrameConverter.ToIplImage converter = new OpenCVFrameConverter.ToIplImage();
         try {
             // frameGrabber.start();
            for(int i = 0; i < 10; i++){
