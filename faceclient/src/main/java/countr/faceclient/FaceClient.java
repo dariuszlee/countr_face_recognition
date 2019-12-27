@@ -1,6 +1,7 @@
 package countr.faceclient;
 
-import faceclient.IFaceClient;
+import countr.faceclient.IFaceClient;
+import countr.common.RecognitionMessage;
 
 import org.opencv.core.Core;
 import org.opencv.videoio.VideoCapture;
@@ -11,6 +12,8 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 import org.zeromq.ZContext;
+
+import org.apache.commons.lang3.SerializationUtils;
 
 public class FaceClient implements IFaceClient
 {
@@ -63,6 +66,9 @@ public class FaceClient implements IFaceClient
         MatOfByte matOfByte = new MatOfByte();
         Imgcodecs.imencode(".jpg", mat, matOfByte);
         byte[] b = matOfByte.toArray();
+
+        RecognitionMessage message = new RecognitionMessage(b, 1);
+
         try (ZContext context = new ZContext()) {
             //  Socket to talk to server
             System.out.println("Connecting to hello world server");
@@ -73,7 +79,9 @@ public class FaceClient implements IFaceClient
             for (int requestNbr = 0; requestNbr != 10; requestNbr++) {
                 String request = "Hello";
                 System.out.println("Sending Hello " + requestNbr);
-                socket.send(request.getBytes(ZMQ.CHARSET), 0);
+
+                byte[] messageData = SerializationUtils.serialize(message);
+                socket.send(messageData, 0);
 
                 byte[] reply = socket.recv(0);
                 System.out.println(

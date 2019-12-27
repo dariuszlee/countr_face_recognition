@@ -1,6 +1,10 @@
 package countr.faceserver;
 
-import faceserver.IFaceServer;
+import org.apache.commons.lang3.SerializationUtils;
+
+import countr.common.RecognitionMessage;
+import countr.faceserver.IFaceServer;
+
 import org.zeromq.ZMQ;
 import org.zeromq.ZContext;
 
@@ -23,6 +27,7 @@ public class FaceServer implements IFaceServer{
             while (!Thread.currentThread().isInterrupted()) {
                 // Block until a message is received
                 byte[] reply = socket.recv(0);
+                RecognitionMessage yourObject = SerializationUtils.deserialize(reply);
 
                 // Print the message
                 System.out.println(

@@ -1,4 +1,4 @@
-package faceclient;
+package countr.faceclient;
 
 public interface IFaceClient {
     public void Identify();

@@ -1,4 +1,4 @@
-package faceclient;
+package countr.faceclient;
 
 public class FaceRecognitionInfo {
     private float confidenceInterval;

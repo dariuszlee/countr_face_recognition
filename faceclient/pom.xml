@@ -50,23 +50,6 @@
 <build>
     <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
         <plugins>
-          <!-- <plugin> -->
-          <!--     <groupId>org.codehaus.mojo</groupId> -->
-          <!--     <artifactId>exec-maven-plugin</artifactId> -->
-          <!--     <version>1.2.1</version> -->
-          <!--     <executions> -->
-          <!--         <execution> -->
-          <!--             <configuration> -->
-          <!--                 <mainClass>faceclient.FaceClient</mainClass> -->
-          <!--             </configuration> -->
-          <!--         </execution> -->
-          <!--         <execution> -->
-          <!--             <configuration> -->
-          <!--                 <mainClass>faceclient.FaceServer</mainClass> -->
-          <!--             </configuration> -->
-          <!--         </execution> -->
-          <!--     </executions> -->
-          <!-- </plugin> -->
           <plugin>
               <artifactId>maven-clean-plugin</artifactId>
               <version>3.1.0</version>
@@ -90,7 +73,7 @@
               <configuration>
                   <archive>
                       <manifest>
-                          <mainClass>faceclient.FaceClient</mainClass>
+                          <mainClass>countr.faceclient.FaceClient</mainClass>
                       </manifest>
                   </archive>
               </configuration>
@@ -126,7 +109,7 @@
                           <artifactId>exec-maven-plugin</artifactId>
                           <version>1.2.1</version>
                           <configuration>
-                              <mainClass>faceclient.FaceClient</mainClass>
+                              <mainClass>countr.faceclient.FaceClient</mainClass>
                           </configuration>
                       </plugin>
                   </plugins>
@@ -143,7 +126,7 @@
                           <artifactId>exec-maven-plugin</artifactId>
                           <version>1.2.1</version>
                           <configuration>
-                              <mainClass>faceserver.FaceServer</mainClass>
+                              <mainClass>countr.faceserver.FaceServer</mainClass>
                           </configuration>
                       </plugin>
                   </plugins>
