@@ -5,6 +5,7 @@ import faceclient.IFaceClient;
 import org.opencv.core.Core;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
 
 import org.zeromq.SocketType;
@@ -59,27 +60,26 @@ public class FaceClient implements IFaceClient
         // WHAT ARE YOU DOING RIGHT NOW?
         // You are creating the zeromq connection. You need to get a matrix to bytes and send over the line....
         Mat mat = new Mat(2, 2, 0);
-        byte[] b = "a".getBytes();
-        System.out.println(b);
-        mat.put(0,0, b);
-        System.out.println(mat.toString());
-        // try (ZContext context = new ZContext()) {
-        //     //  Socket to talk to server
-        //     System.out.println("Connecting to hello world server");
+        MatOfByte matOfByte = new MatOfByte();
+        Imgcodecs.imencode(".jpg", mat, matOfByte);
+        byte[] b = matOfByte.toArray();
+        try (ZContext context = new ZContext()) {
+            //  Socket to talk to server
+            System.out.println("Connecting to hello world server");
 
-        //     ZMQ.Socket socket = context.createSocket(SocketType.REQ);
-        //     socket.connect("tcp://localhost:5555");
+            ZMQ.Socket socket = context.createSocket(SocketType.REQ);
+            socket.connect("tcp://localhost:5555");
 
-        //     for (int requestNbr = 0; requestNbr != 10; requestNbr++) {
-        //         String request = "Hello";
-        //         System.out.println("Sending Hello " + requestNbr);
-        //         socket.send(request.getBytes(ZMQ.CHARSET), 0);
+            for (int requestNbr = 0; requestNbr != 10; requestNbr++) {
+                String request = "Hello";
+                System.out.println("Sending Hello " + requestNbr);
+                socket.send(request.getBytes(ZMQ.CHARSET), 0);
 
-        //         byte[] reply = socket.recv(0);
-        //         System.out.println(
-        //                 "Received " + new String(reply, ZMQ.CHARSET) + " " +
-        //                 requestNbr);
-        //     }
-        // }
+                byte[] reply = socket.recv(0);
+                System.out.println(
+                        "Received " + new String(reply, ZMQ.CHARSET) + " " +
+                        requestNbr);
+            }
+        }
     }
 }

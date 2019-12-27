@@ -38,20 +38,35 @@
         <!-- <scope>system</scope> -->
         <!-- <systemPath>${basedir}/target/lib/opencv-420.jar</systemPath> -->
     </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.9</version>
+    </dependency>
+
 </dependencies>
 
 <build>
     <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
         <plugins>
-            <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
-          <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>exec-maven-plugin</artifactId>
-              <version>1.2.1</version>
-              <configuration>
-                  <mainClass>faceclient.FaceClient</mainClass>
-              </configuration>
-          </plugin>
+          <!-- <plugin> -->
+          <!--     <groupId>org.codehaus.mojo</groupId> -->
+          <!--     <artifactId>exec-maven-plugin</artifactId> -->
+          <!--     <version>1.2.1</version> -->
+          <!--     <executions> -->
+          <!--         <execution> -->
+          <!--             <configuration> -->
+          <!--                 <mainClass>faceclient.FaceClient</mainClass> -->
+          <!--             </configuration> -->
+          <!--         </execution> -->
+          <!--         <execution> -->
+          <!--             <configuration> -->
+          <!--                 <mainClass>faceclient.FaceServer</mainClass> -->
+          <!--             </configuration> -->
+          <!--         </execution> -->
+          <!--     </executions> -->
+          <!-- </plugin> -->
           <plugin>
               <artifactId>maven-clean-plugin</artifactId>
               <version>3.1.0</version>
@@ -100,4 +115,40 @@
       </plugins>
   </pluginManagement>
   </build>
+  <profiles>
+      <profile>
+          <id>Client</id>
+          <build>
+              <pluginManagement>
+                  <plugins>
+                      <plugin>
+                          <groupId>org.codehaus.mojo</groupId>
+                          <artifactId>exec-maven-plugin</artifactId>
+                          <version>1.2.1</version>
+                          <configuration>
+                              <mainClass>faceclient.FaceClient</mainClass>
+                          </configuration>
+                      </plugin>
+                  </plugins>
+              </pluginManagement>
+          </build>
+      </profile>
+      <profile>
+          <id>Server</id>
+          <build>
+              <pluginManagement>
+                  <plugins>
+                      <plugin>
+                          <groupId>org.codehaus.mojo</groupId>
+                          <artifactId>exec-maven-plugin</artifactId>
+                          <version>1.2.1</version>
+                          <configuration>
+                              <mainClass>faceserver.FaceServer</mainClass>
+                          </configuration>
+                      </plugin>
+                  </plugins>
+              </pluginManagement>
+          </build>
+      </profile>
+  </profiles>
 </project>
