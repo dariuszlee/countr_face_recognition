@@ -1,4 +1,4 @@
-package faceserver;
+package countr.faceserver;
 
 import faceserver.IFaceServer;
 import org.zeromq.ZMQ;

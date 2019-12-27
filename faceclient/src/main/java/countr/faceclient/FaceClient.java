@@ -1,4 +1,4 @@
-package faceclient;
+package countr.faceclient;
 
 import faceclient.IFaceClient;
 
