@@ -62,12 +62,25 @@ public class FaceClient implements IFaceClient
         // faceClient.Identify();
         // WHAT ARE YOU DOING RIGHT NOW?
         // You are creating the zeromq connection. You need to get a matrix to bytes and send over the line....
-        Mat mat = new Mat(2, 2, 0);
-        MatOfByte matOfByte = new MatOfByte();
-        Imgcodecs.imencode(".jpg", mat, matOfByte);
-        byte[] b = matOfByte.toArray();
+        Mat mat = Imgcodecs.imread("/home/dzly/projects/countr_face_recognition/yalefaces/subject01.normal.jpg.png");
+        int channels = mat.channels();
+        int type =  mat.type();
+        int depth =  mat.depth();
+        int height =  mat.height();
+        int width =  mat.width();
+        byte[] b = new byte[height * width * channels];
+        mat.get(0,0, b);
+        // MatOfByte matOfByte = new MatOfByte();
+        // Imgcodecs.imencode(".png", mat, matOfByte);
 
-        RecognitionMessage message = new RecognitionMessage(b, 1);
+        // byte[] b = matOfByte.toArray();
+        System.out.println("Length of bytes "+ b.length);
+        System.out.println("width "+ width);
+        System.out.println("height "+ height);
+        System.out.println("type "+ type);
+        System.out.println("depth "+ depth);
+        System.out.println("channels "+ mat.channels());
+
 
         try (ZContext context = new ZContext()) {
             //  Socket to talk to server
@@ -80,6 +93,10 @@ public class FaceClient implements IFaceClient
                 String request = "Hello";
                 System.out.println("Sending Hello " + requestNbr);
 
+                // String outfile = String.format("/home/dzly/projects/countr_face_recognition/faceclient/out2/%d.png", mat);
+                // boolean res = Imgcodecs.imwrite(outfile, mat);
+
+                RecognitionMessage message = new RecognitionMessage(b, type, height, width, requestNbr);
                 byte[] messageData = SerializationUtils.serialize(message);
                 socket.send(messageData, 0);
 
