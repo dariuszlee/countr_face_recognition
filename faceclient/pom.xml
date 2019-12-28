@@ -16,25 +16,141 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+
+    <!-- Imported for mtcnn-java -->
+    <nd4j.version>1.0.0-SNAPSHOT</nd4j.version>
+    <tensorflow.version>1.11.0</tensorflow.version>
+    <javacpp-presets.version>1.4.3</javacpp-presets.version>
+
+    <openblas.version>0.3.3</openblas.version>
+
+    <mkl.version>2019.0</mkl.version>
+    <mkl-dnn.version>0.16</mkl-dnn.version>
+    <jmh.version>1.21</jmh.version>
+    <apache.commons>1.17</apache.commons>
+    <spring-framework.version>5.1.1.RELEASE</spring-framework.version>
+    <jackson.version>2.9.6</jackson.version>
 </properties>
 <repositories>
     <repository>
-        <id>jcenter</id>
-        <url>https://jcenter.bintray.com/</url>
+        <id>sonatype-nexus-snapshots</id>
+        <name>Sonatype Nexus Snapshots</name>
+        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>daily</updatePolicy>  <!-- Optional, update daily -->
+        </snapshots>
     </repository>
+
+    <!-- <repository> -->
+    <!--     <id>jcenter</id> -->
+    <!--     <url>https://jcenter.bintray.com/</url> -->
+    <!-- </repository> -->
 </repositories>
 
 <dependencies>
-    <!-- https://mvnrepository.com/artifact/org.zeromq/jeromq -->
+    <dependency>
+        <groupId>org.bytedeco.javacpp-presets</groupId>
+        <artifactId>openblas-platform</artifactId>
+        <version>${openblas.version}-${javacpp-presets.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.bytedeco.javacpp-presets</groupId>
+        <artifactId>mkl-platform</artifactId>
+        <version>${mkl.version}-${javacpp-presets.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.bytedeco.javacpp-presets</groupId>
+        <artifactId>mkl-dnn-platform</artifactId>
+        <version>${mkl-dnn.version}-${javacpp-presets.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.nd4j</groupId>
+        <artifactId>nd4j-native</artifactId>
+        <version>${nd4j.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.nd4j</groupId>
+        <artifactId>nd4j-tensorflow</artifactId>
+        <version>${nd4j.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.bytedeco.javacpp-presets</groupId>
+        <artifactId>tensorflow-platform</artifactId>
+        <version>${tensorflow.version}-${javacpp-presets.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.bytedeco</groupId>
+        <artifactId>javacv-platform</artifactId>
+        <version>${javacpp-presets.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.bytedeco.javacpp-presets</groupId>
+        <artifactId>opencv-platform</artifactId>
+        <version>3.4.3-${javacpp-presets.version}</version>
+    </dependency>
+
+    <!-- ND4J DataVec -->
+    <dependency>
+        <groupId>org.datavec</groupId>
+        <artifactId>datavec-data-image</artifactId>
+        <version>${nd4j.version}</version>
+    </dependency>
+
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>${spring-framework.version}</version>
+    </dependency>
+
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.12</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>${apache.commons}</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.openjdk.jmh</groupId>
+        <artifactId>jmh-core</artifactId>
+        <version>${jmh.version}</version>
+        <scope>test</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>org.openjdk.jmh</groupId>
+        <artifactId>jmh-generator-annprocess</artifactId>
+        <version>${jmh.version}</version>
+        <scope>test</scope>
+    </dependency>
+
     <dependency>
         <groupId>org.zeromq</groupId>
         <artifactId>jeromq</artifactId>
         <version>0.5.1</version>
-    </dependency>
-    <dependency>
-        <groupId>net.tzolov.cv</groupId>
-        <artifactId>mtcnn</artifactId>
-        <version>0.0.4</version>
     </dependency>
     <dependency>
         <groupId>junit</groupId>
@@ -42,13 +158,13 @@
         <version>4.11</version>
         <scope>test</scope>
     </dependency>
-    <dependency>
-        <groupId>org</groupId>
-        <artifactId>opencv</artifactId>
-        <version>4.2.0</version>
-        <!-- <scope>system</scope> -->
-        <!-- <systemPath>${basedir}/target/lib/opencv-420.jar</systemPath> -->
-    </dependency>
+    <!-- <dependency> -->
+    <!--     <groupId>org</groupId> -->
+    <!--     <artifactId>opencv</artifactId> -->
+    <!--     <version>4.2.0</version> -->
+    <!--     <!-1- <scope>system</scope> -1-> -->
+    <!--     <!-1- <systemPath>${basedir}/target/lib/opencv-420.jar</systemPath> -1-> -->
+    <!-- </dependency> -->
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
     <dependency>
         <groupId>org.apache.commons</groupId>

@@ -111,12 +111,12 @@ public class MtcnnService {
     private GraphRunner createGraphRunner(String tensorflowModelUri, String inputLabel,String... outLabel) { 
         try { 
             ConfigProto cp = ConfigProto.newBuilder().setInterOpParallelismThreads(4).setAllowSoftPlacement(true).setLogDevicePlacement(true).build(); 
-            return new GraphRunner( 
-                    IOUtils.toByteArray(
-                        new DefaultResourceLoader().getResource(tensorflowModelUri).getInputStream()), 
-                    Arrays.asList(inputLabel),
+            return GraphRunner.builder().inputNames(Arrays.asList(inputLabel)).sessionOptionsConfigProto(cp).graphBytes(IOUtils.toByteArray(new DefaultResourceLoader().getResource(tensorflowModelUri).getInputStream())).build();
+                    // IOUtils.toByteArray(
+                    //     new DefaultResourceLoader().getResource(tensorflowModelUri).getInputStream()), 
+                    // Arrays.asList(inputLabel),
                     // Arrays.asList(outLabel), 
-                    cp); 
+                    // cp); 
         } 
         catch (IOException e) { 
                 throw new IllegalStateException(String.format("Failed to load TF model [%s] and input [%s]:", tensorflowModelUri, inputLabel), e); 
@@ -241,12 +241,13 @@ public class MtcnnService {
 		try (MemoryWorkspace ws = Nd4j.getWorkspaceManager().getAndActivateWorkspace(initialConfig, "SOME_ID")) {
 
 			Assert.isTrue(image3HW.rank() == 3, "The input image is expected to have [0, Channels, Width, Height] dimensions");
-            System.out.println(image3HW.shape()[0]);
 			Assert.isTrue(image3HW.shape()[0] == 4, "The input image is expected to have channel count at dimension 0");
 
 			// Compute the scale pyramid
 			int height = (int) image3HW.size(1);
 			int width = (int) image3HW.size(2);
+            System.out.println("Height "+ height);
+            System.out.println("Width "+ width);
 
 			List<Double> scales = MtcnnUtil.computeScalePyramid(height, width, this.minFaceSize, this.scaleFactor);
 
