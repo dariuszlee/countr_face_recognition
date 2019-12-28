@@ -16,9 +16,11 @@ import net.tzolov.cv.mtcnn.MtcnnUtil;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 
-/**
- * @author Christian Tzolov
- */
+import org.datavec.image.loader.Java2DNativeImageLoader;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import static org.nd4j.linalg.indexing.NDArrayIndex.all;
+import static org.nd4j.linalg.indexing.NDArrayIndex.point;
+
 public class FaceDetection {
 
 	public static void main(String[] args) throws IOException {
@@ -29,13 +31,17 @@ public class FaceDetection {
 
 		ResourceLoader resourceLoader = new DefaultResourceLoader();
 
-		try (InputStream imageInputStream = resourceLoader.getResource("classpath:/pivotal-ipo-nyse.jpg").getInputStream()) {
+		try (InputStream imageInputStream = resourceLoader.getResource("classpath:/trainer_reference.png").getInputStream()) {
 
 			// 1. Load the input image (you can use http:/, file:/ or classpath:/ URIs to resolve the input image
 			BufferedImage inputImage = ImageIO.read(imageInputStream);
 
 			// 2. Run face detection
-			FaceAnnotation[] faceAnnotations = mtcnnService.faceDetection(inputImage);
+            Java2DNativeImageLoader imageLoader = new Java2DNativeImageLoader();
+            // INDArray ndImage3HW = imageLoader.asMatrix(inputImage).get(point(0), all(), all(), all());
+            INDArray ndImage3HW = imageLoader.asMatrix(inputImage).get(point(0), all(), all(), all());
+			FaceAnnotation[] faceAnnotations = mtcnnService.faceDetection(ndImage3HW);
+
 
 			// 3. Augment the input image with the detected faces
 			BufferedImage annotatedImage = MtcnnUtil.drawFaceAnnotations(inputImage, faceAnnotations);
@@ -47,5 +53,4 @@ public class FaceDetection {
 			System.out.println("Face Annotations (JSON): " + jsonMapper.writeValueAsString(faceAnnotations));
 		}
 	}
-}
 }
