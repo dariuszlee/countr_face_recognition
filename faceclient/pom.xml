@@ -19,17 +19,17 @@
 
     <!-- Imported for mtcnn-java -->
     <nd4j.version>1.0.0-SNAPSHOT</nd4j.version>
-    <tensorflow.version>1.11.0</tensorflow.version>
-    <javacpp-presets.version>1.4.3</javacpp-presets.version>
-
-    <openblas.version>0.3.3</openblas.version>
-
-    <mkl.version>2019.0</mkl.version>
-    <mkl-dnn.version>0.16</mkl-dnn.version>
+    <tensorflow.version>1.15.0</tensorflow.version>
+    <javacpp-presets.version>1.5.2</javacpp-presets.version>
+    <opencv.version>4.1.2</opencv.version>
+    <openblas.version>0.3.7</openblas.version>
+    <mkl.version>2019.5</mkl.version>
+    <mkl-dnn.version>0.21.2</mkl-dnn.version>
+        
     <jmh.version>1.21</jmh.version>
     <apache.commons>1.17</apache.commons>
     <spring-framework.version>5.1.1.RELEASE</spring-framework.version>
-    <jackson.version>2.9.6</jackson.version>
+    <jackson.version>2.10.0</jackson.version>
 </properties>
 <repositories>
     <repository>
@@ -53,20 +53,37 @@
 
 <dependencies>
     <dependency>
-        <groupId>org.bytedeco.javacpp-presets</groupId>
+        <groupId>org.bytedeco</groupId>
         <artifactId>openblas-platform</artifactId>
         <version>${openblas.version}-${javacpp-presets.version}</version>
     </dependency>
     <dependency>
-        <groupId>org.bytedeco.javacpp-presets</groupId>
+        <groupId>org.bytedeco</groupId>
         <artifactId>mkl-platform</artifactId>
         <version>${mkl.version}-${javacpp-presets.version}</version>
     </dependency>
     <dependency>
-        <groupId>org.bytedeco.javacpp-presets</groupId>
+        <groupId>org.bytedeco</groupId>
         <artifactId>mkl-dnn-platform</artifactId>
         <version>${mkl-dnn.version}-${javacpp-presets.version}</version>
     </dependency>
+    <dependency>
+        <groupId>org.bytedeco</groupId>
+        <artifactId>tensorflow-platform</artifactId>
+        <version>${tensorflow.version}-${javacpp-presets.version}</version>
+    </dependency>
+    <!-- <dependency> -->
+    <!--     <groupId>org.bytedeco</groupId> -->
+    <!--     <artifactId>javacv-platform</artifactId> -->
+    <!--     <version>1.5.2</version> -->
+    <!-- </dependency> -->
+    <dependency>
+        <groupId>org.bytedeco</groupId>
+        <artifactId>opencv-platform</artifactId>
+        <version>${opencv.version}-${javacpp-presets.version}</version>
+    </dependency>
+
+    <!-- ND4J Settings -->
     <dependency>
         <groupId>org.nd4j</groupId>
         <artifactId>nd4j-native</artifactId>
@@ -76,21 +93,6 @@
         <groupId>org.nd4j</groupId>
         <artifactId>nd4j-tensorflow</artifactId>
         <version>${nd4j.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.bytedeco.javacpp-presets</groupId>
-        <artifactId>tensorflow-platform</artifactId>
-        <version>${tensorflow.version}-${javacpp-presets.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.bytedeco</groupId>
-        <artifactId>javacv-platform</artifactId>
-        <version>${javacpp-presets.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.bytedeco.javacpp-presets</groupId>
-        <artifactId>opencv-platform</artifactId>
-        <version>3.4.3-${javacpp-presets.version}</version>
     </dependency>
 
     <!-- ND4J DataVec -->
@@ -151,12 +153,6 @@
         <groupId>org.zeromq</groupId>
         <artifactId>jeromq</artifactId>
         <version>0.5.1</version>
-    </dependency>
-    <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.11</version>
-        <scope>test</scope>
     </dependency>
     <!-- <dependency> -->
     <!--     <groupId>org</groupId> -->

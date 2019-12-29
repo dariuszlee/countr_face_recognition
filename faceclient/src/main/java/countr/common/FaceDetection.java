@@ -20,6 +20,7 @@ import org.datavec.image.loader.Java2DNativeImageLoader;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import static org.nd4j.linalg.indexing.NDArrayIndex.all;
 import static org.nd4j.linalg.indexing.NDArrayIndex.point;
+import static org.nd4j.linalg.indexing.NDArrayIndex.interval;
 
 public class FaceDetection {
 
@@ -31,16 +32,16 @@ public class FaceDetection {
 
 		ResourceLoader resourceLoader = new DefaultResourceLoader();
 
-		try (InputStream imageInputStream = resourceLoader.getResource("classpath:/trainer_reference.png").getInputStream()) {
+		try (InputStream imageInputStream = resourceLoader.getResource("classpath:/trainer_reference.jpg").getInputStream()) {
 
 			// 1. Load the input image (you can use http:/, file:/ or classpath:/ URIs to resolve the input image
 			BufferedImage inputImage = ImageIO.read(imageInputStream);
 
 			// 2. Run face detection
             Java2DNativeImageLoader imageLoader = new Java2DNativeImageLoader();
-            // INDArray ndImage3HW = imageLoader.asMatrix(inputImage).get(point(0), all(), all(), all());
-            INDArray ndImage3HW = imageLoader.asMatrix(inputImage).get(point(0), all(), all(), all());
+            INDArray ndImage3HW = imageLoader.asMatrix(inputImage).get(point(0), interval(0, 3), all(), all());
 			FaceAnnotation[] faceAnnotations = mtcnnService.faceDetection(ndImage3HW);
+            System.out.println(faceAnnotations);
 
 
 			// 3. Augment the input image with the detected faces

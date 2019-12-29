@@ -420,7 +420,8 @@ public class MtcnnUtil {
 			}
 		}
 
-		return CollectionUtils.isEmpty(indexes) ? Nd4j.empty(DataBuffer.Type.FLOAT) : Nd4j.create(indexes);
+		// return CollectionUtils.isEmpty(indexes) ? Nd4j.empty(DataBuffer.TypeEx.FLOAT) : Nd4j.create(indexes);
+		return CollectionUtils.isEmpty(indexes) ? Nd4j.empty() : Nd4j.create(indexes);
 	}
 
 	/**

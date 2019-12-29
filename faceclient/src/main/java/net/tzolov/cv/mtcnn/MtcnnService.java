@@ -28,8 +28,23 @@ import javax.imageio.ImageIO;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_imgproc;
+
+// import org.bytedeco.javacpp.*;
+// import static org.bytedeco.javacpp.opencv_core.*;
+// import static org.bytedeco.javacpp.opencv_imgcodecs.*;
+// import static org.bytedeco.javacpp.opencv_stitching.*;
+
+import org.bytedeco.javacpp.*;
+// import org.bytedeco.opencv.opencv_core;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import org.bytedeco.opencv.opencv_stitching.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+// import static org.bytedeco.opencv.global.opencv_core.Size;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.*;
+import static org.bytedeco.opencv.global.opencv_stitching.*;
+
 import org.datavec.image.loader.Java2DNativeImageLoader;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.memory.conf.WorkspaceConfiguration;
@@ -94,13 +109,13 @@ public class MtcnnService {
 
 		this.imageLoader = new Java2DNativeImageLoader();
 
-        this.proposeNetGraphRunner = this.createGraphRunner(TF_PNET_MODEL_URI, "pnet/input","pnet/conv4-2/BiasAdd","pnet/prob1");
-        this.refineNetGraphRunner = this.createGraphRunner(TF_RNET_MODEL_URI, "rnet/input","rnet/conv5-2/conv5-2","rnet/prob1");
-        this.outputNetGraphRunner = this.createGraphRunner(TF_ONET_MODEL_URI, "onet/input","onet/conv6-2/conv6-2","onet/conv6-3/conv6-3",
-                "onet/prob1"  );
-		// this.proposeNetGraphRunner = this.createGraphRunner(TF_PNET_MODEL_URI, "pnet/input");
-		// this.refineNetGraphRunner = this.createGraphRunner(TF_RNET_MODEL_URI, "rnet/input");
-		// this.outputNetGraphRunner = this.createGraphRunner(TF_ONET_MODEL_URI, "onet/input");
+        // this.proposeNetGraphRunner = this.createGraphRunner(TF_PNET_MODEL_URI, "pnet/input","pnet/conv4-2/BiasAdd","pnet/prob1");
+        // this.refineNetGraphRunner = this.createGraphRunner(TF_RNET_MODEL_URI, "rnet/input","rnet/conv5-2/conv5-2","rnet/prob1");
+        // this.outputNetGraphRunner = this.createGraphRunner(TF_ONET_MODEL_URI, "onet/input","onet/conv6-2/conv6-2","onet/conv6-3/conv6-3",
+        //         "onet/prob1"  );
+		this.proposeNetGraphRunner = this.createGraphRunner(TF_PNET_MODEL_URI, "pnet/input");
+		this.refineNetGraphRunner = this.createGraphRunner(TF_RNET_MODEL_URI, "rnet/input");
+		this.outputNetGraphRunner = this.createGraphRunner(TF_ONET_MODEL_URI, "onet/input");
 
 		// Experimental
 		//proposeNetGraph = TFGraphMapper.getInstance().importGraph(new DefaultResourceLoader().getResource(TF_PNET_MODEL_URI).getInputStream());
@@ -110,13 +125,22 @@ public class MtcnnService {
 
     private GraphRunner createGraphRunner(String tensorflowModelUri, String inputLabel,String... outLabel) { 
         try { 
-            ConfigProto cp = ConfigProto.newBuilder().setInterOpParallelismThreads(4).setAllowSoftPlacement(true).setLogDevicePlacement(true).build(); 
-            return GraphRunner.builder().inputNames(Arrays.asList(inputLabel)).sessionOptionsConfigProto(cp).graphBytes(IOUtils.toByteArray(new DefaultResourceLoader().getResource(tensorflowModelUri).getInputStream())).build();
-                    // IOUtils.toByteArray(
-                    //     new DefaultResourceLoader().getResource(tensorflowModelUri).getInputStream()), 
-                    // Arrays.asList(inputLabel),
-                    // Arrays.asList(outLabel), 
-                    // cp); 
+            return GraphRunner.builder().graphBytes(
+                    IOUtils.toByteArray(new DefaultResourceLoader().getResource(tensorflowModelUri).getInputStream()))
+                    .inputNames(Arrays.asList(inputLabel)).build();
+
+            // ConfigProto cp = ConfigProto.newBuilder().setInterOpParallelismThreads(4).setAllowSoftPlacement(true).setLogDevicePlacement(true).build(); 
+            // return GraphRunner.builder()
+            //     .inputNames(Arrays.asList(inputLabel))
+            //     .outputNames(Arrays.asList(outLabel))
+            //     .sessionOptionsConfigProto(cp)
+            //     .graphBytes(IOUtils.toByteArray(new DefaultResourceLoader().getResource(tensorflowModelUri).getInputStream())).build();
+            // return new GraphRunner(
+            //         IOUtils.toByteArray(
+            //             new DefaultResourceLoader().getResource(tensorflowModelUri).getInputStream()), 
+            //         Arrays.asList(inputLabel),
+            //         Arrays.asList(outLabel), 
+            //         cp); 
         } 
         catch (IOException e) { 
                 throw new IllegalStateException(String.format("Failed to load TF model [%s] and input [%s]:", tensorflowModelUri, inputLabel), e); 
@@ -145,11 +169,14 @@ public class MtcnnService {
 		// [ 3 x H x W ]
 		INDArray image = this.imageLoader.asMatrix(new DefaultResourceLoader().getResource(imageUri).getInputStream())
 				.get(point(0), all(), all(), all()).dup();
+        
 		return faceDetection(image);
 	}
 
 	public FaceAnnotation[] faceDetection(BufferedImage bImage) throws IOException {
-		INDArray ndImage3HW = this.imageLoader.asMatrix(bImage).get(point(0), all(), all(), all());
+		// INDArray ndImage3HW = this.imageLoader.asMatrix(bImage).get(point(0), all(), all(), all());
+		INDArray ndImage3HW = this.imageLoader.asMatrix(bImage).get(point(0), interval(0,3), all());
+		// ndImage3HW = ndImage3HW.get(point(0), interval(0, 2), all(), all());
 		return faceDetection(ndImage3HW);
 	}
 
@@ -214,8 +241,8 @@ public class MtcnnService {
 
 		INDArray croppedImage = MtcnnUtil.crop(image, x1, x2, y1, y2);
 
-		croppedImage = this.resize(croppedImage,
-				new opencv_core.Size(alignedImageSize, alignedImageSize)); // W, H
+		croppedImage = this.internal_resize(croppedImage,
+				new Size(alignedImageSize, alignedImageSize)); // W, H
 
 		if (preWhiten) {
 			croppedImage = MtcnnUtil.preWhiten(croppedImage);
@@ -241,13 +268,11 @@ public class MtcnnService {
 		try (MemoryWorkspace ws = Nd4j.getWorkspaceManager().getAndActivateWorkspace(initialConfig, "SOME_ID")) {
 
 			Assert.isTrue(image3HW.rank() == 3, "The input image is expected to have [0, Channels, Width, Height] dimensions");
-			Assert.isTrue(image3HW.shape()[0] == 4, "The input image is expected to have channel count at dimension 0");
+			Assert.isTrue(image3HW.shape()[0] == 3, "The input image is expected to have channel count at dimension 0");
 
 			// Compute the scale pyramid
 			int height = (int) image3HW.size(1);
 			int width = (int) image3HW.size(2);
-            System.out.println("Height "+ height);
-            System.out.println("Width "+ width);
 
 			List<Double> scales = MtcnnUtil.computeScalePyramid(height, width, this.minFaceSize, this.scaleFactor);
 
@@ -289,7 +314,7 @@ public class MtcnnService {
 			int newHeight = (int) Math.ceil(imageHeight * scale);
 
 			//[0, W, H, 3]
-			INDArray image0WH3 = resize(image3HW, new opencv_core.Size(newWidth, newHeight)).permute(0, 3, 2, 1).dup();
+			INDArray image0WH3 = this.internal_resize(image3HW, new Size(newWidth, newHeight)).permute(0, 3, 2, 1).dup();
 			//image0WH3 = image0WH3.subi(127.5).muli(0.0078125);
 			image0WH3 = image0WH3.sub(127.5).mul(0.0078125);
 
@@ -550,7 +575,7 @@ public class MtcnnService {
 		//  tempimg = np.zeros(shape=(size, size, 3, num_boxes))
 		INDArray tempImg = Nd4j.zeros(new int[] { size, size, CHANNEL_COUNT, numBoxes }, C_ORDERING);
 
-		opencv_core.Size newSize = new opencv_core.Size(size, size);
+		Size newSize = new Size(size, size);
 
 		for (int k = 0; k < numBoxes; k++) {
 			//tmp = np.zeros((int(stage_status.tmph[k]), int(stage_status.tmpw[k]), 3))
@@ -571,7 +596,7 @@ public class MtcnnService {
 			//    tempimg[:, :, :, k] = cv2.resize(tmp, (size, size), interpolation=cv2.INTER_AREA)
 			if ((tmp.shape()[0] > 0 && tmp.shape()[1] > 0) || (tmp.shape()[0] == 0 && tmp.shape()[1] == 0)) {
 
-				INDArray resizedImage = resize(tmp.permutei(2, 0, 1).dup(), newSize)
+				INDArray resizedImage = this.internal_resize(tmp.permutei(2, 0, 1).dup(), newSize)
 						.get(point(0), all(), all(), all()).permutei(1, 2, 0).dup();
 
 				tempImg.put(new INDArrayIndex[] { all(), all(), all(), point(k) }, resizedImage);
@@ -597,11 +622,11 @@ public class MtcnnService {
 	 * @return Returns {@link INDArray} resized image with following dimensions [BATCH, WIDTH, HEIGHT, CHANNEL]
 	 * @throws IOException
 	 */
-	public INDArray resize(INDArray imageCHW, opencv_core.Size newSizeWH) throws IOException {
+	public INDArray internal_resize(INDArray imageCHW, Size newSizeWH) throws IOException {
 		Assert.isTrue(imageCHW.size(0) == CHANNEL_COUNT, "Input image is expected to have the [3, W, H] dimensions");
 		// Mat expects [C, H, W] dimensions
-		opencv_core.Mat mat = imageLoader.asMat(imageCHW);
-		opencv_imgproc.resize(mat, mat, newSizeWH, 0, 0, opencv_imgproc.CV_INTER_AREA);
+		Mat mat = imageLoader.asMat(imageCHW);
+		resize(mat, mat, newSizeWH, 0, 0, CV_INTER_AREA);
 		//[0, W, H, 3]
 		return imageLoader.asMatrix(mat);
 	}
