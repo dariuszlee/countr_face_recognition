@@ -52,6 +52,19 @@ public class FaceDetection {
 
 			// 5. Print the face annotations as JSON
 			System.out.println("Face Annotations (JSON): " + jsonMapper.writeValueAsString(faceAnnotations));
+
+            int margin = 44;
+            int alignedImageSize = 160;
+            for (FaceAnnotation bbox : faceAnnotations) {
+                INDArray alignedFace = mtcnnService.faceAlignment(ndImage3HW, bbox, margin, alignedImageSize, true);
+
+                BufferedImage image = new Java2DNativeImageLoader().asBufferedImage(alignedFace);
+                ImageIO.write(image, "jpg", new File("./cropped" + ".png"));
+                System.out.println(".");
+
+            }
+                
+            
 		}
 	}
 }
