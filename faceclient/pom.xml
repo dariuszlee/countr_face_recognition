@@ -69,17 +69,15 @@
         <artifactId>mtcnn</artifactId>
         <version>0.0.4</version>
     </dependency>
-    <dependency>
-        <groupId>org</groupId>
-        <artifactId>opencv</artifactId>
-        <version>4.2.0</version>
-        <!-- <scope>system</scope> -->
-        <!-- <systemPath>${basedir}/target/lib/opencv-420.jar</systemPath> -->
+    <dependency> 
+        <groupId>org.apache.mxnet</groupId> 
+        <artifactId>mxnet-full_2.11-linux-x86_64-cpu</artifactId> 
+        <version>1.4.0</version> 
     </dependency>
     <!-- <dependency> -->
-    <!--     <groupId>org.apache.commons</groupId> -->
-    <!--     <artifactId>commons-lang3</artifactId> -->
-    <!--     <version>3.9</version> -->
+    <!--     <groupId>org</groupId> -->
+    <!--     <artifactId>opencv</artifactId> -->
+    <!--     <version>4.2.0</version> -->
     <!-- </dependency> -->
 
 </dependencies>
@@ -181,6 +179,23 @@
                           <version>1.2.1</version>
                           <configuration>
                               <mainClass>countr.common.FaceDetection</mainClass>
+                          </configuration>
+                      </plugin>
+                  </plugins>
+              </pluginManagement>
+          </build>
+      </profile>
+      <profile>
+          <id>MXNet</id>
+          <build>
+              <pluginManagement>
+                  <plugins>
+                      <plugin>
+                          <groupId>org.codehaus.mojo</groupId>
+                          <artifactId>exec-maven-plugin</artifactId>
+                          <version>1.2.1</version>
+                          <configuration>
+                              <mainClass>countr.common.MXNetUtils</mainClass>
                           </configuration>
                       </plugin>
                   </plugins>
