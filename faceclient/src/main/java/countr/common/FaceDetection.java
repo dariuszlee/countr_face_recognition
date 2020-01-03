@@ -54,7 +54,7 @@ public class FaceDetection {
 			System.out.println("Face Annotations (JSON): " + jsonMapper.writeValueAsString(faceAnnotations));
 
             int margin = 44;
-            int alignedImageSize = 160;
+            int alignedImageSize = 112;
             for (FaceAnnotation bbox : faceAnnotations) {
                 INDArray alignedFace = mtcnnService.faceAlignment(ndImage3HW, bbox, margin, alignedImageSize, false);
 
