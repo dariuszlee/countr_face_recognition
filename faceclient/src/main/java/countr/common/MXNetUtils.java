@@ -31,28 +31,43 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MXNetUtils {  
-    public static void main(String[] args) {
-        // Nd4j.dtype = DataBuffer.Type.DOUBLE;
-        // NDArrayFactory factory = Nd4j.factory();
-        // factory.setDType(DataBuffer.Type.DOUBLE);
-        Nd4j.setDataType(DataBuffer.Type.INT);
+    public static Shape inputShape = new Shape(new int[]{1, 3, 112, 112});
 
-        System.out.println("Hello world");
+    public static Predictor generatePredictor(String modelPath, boolean isGpu) {
         List<Context> ctx = new ArrayList<>();
-        ctx.add(Context.cpu()); // Choosing CPU Context here
-        // ctx.add(Context.gpu()); // Choosing CPU Context here
-        // System.out.println("Device " + ctx.deviceType);
-        
-        String modelPath = "/home/dzly/projects/countr_face_recognition/faceclient/model-r100-ii/model";
+        if(isGpu){
+            ctx.add(Context.gpu()); // Choosing CPU Context here
+        }
+        else {
+            ctx.add(Context.cpu()); // Choosing CPU Context here
+        }
+
         List<DataDesc> inputDesc = new ArrayList<>();
-        Shape inputShape = new Shape(new int[]{1, 3, 112, 112});
         inputDesc.add(new DataDesc("data", inputShape, DType.Float32(), "NCHW"));
+
         Predictor resnet100 = new Predictor(modelPath, inputDesc, ctx, 0);
+        return resnet100;
+    }
+
+    public static List<NDArray> predict(BufferedImage inputImage, Predictor resnet100){
+        Java2DNativeImageLoader imageLoader = new Java2DNativeImageLoader();
+        INDArray ndImage3HW = imageLoader.asMatrix(inputImage).get(point(0), interval(0, 3), all(), all());
+        float[] ints = ndImage3HW.data().asFloat();
+        NDArray img = new NDArray(ints, inputShape, ctx.get(0));
+        List<NDArray> imgs = new ArrayList<NDArray>();
+        imgs.add(img);
+        List<NDArray> res = resnet100.predictWithNDArray(imgs);
+        System.out.println(res);
+        return res;
+    }
+
+
+    public static void main(String[] args) {
+        String modelPath = "/home/dzly/projects/countr_face_recognition/faceclient/model-r100-ii/model";
+        Predictor resnet100 = MXNetUtils.generatePredictor(modelPath, false);
+
 
         String imgPath = "/home/dzly/projects/countr_face_recognition/faceclient/cropped.jpg";
-
-		// ResourceLoader resourceLoader = new DefaultResourceLoader();
-		// try (InputStream imageInputStream = resourceLoader.getResource(imgPath).getInputStream()) {
 		try (InputStream imageInputStream = new FileInputStream(imgPath)) {
             BufferedImage inputImage = ImageIO.read(imageInputStream);
             Java2DNativeImageLoader imageLoader = new Java2DNativeImageLoader();
@@ -60,7 +75,6 @@ public class MXNetUtils {
             float[] ints = ndImage3HW.data().asFloat();
             System.out.println(ints);
             NDArray img = new NDArray(ints, inputShape, ctx.get(0));
-            System.out.println(img);
             // NDArray img = Image.imDecode(ints);
             // System.out.println(img);
             // NDArray img2 = img.reshape(new int[]{1, 3, 112, 112});
@@ -70,6 +84,7 @@ public class MXNetUtils {
             List<NDArray> imgs = new ArrayList<NDArray>();
             imgs.add(img);
             List<NDArray> res = resnet100.predictWithNDArray(imgs);
+            System.out.println(res);
         }
         catch(Exception e) {
             System.out.println(e);
