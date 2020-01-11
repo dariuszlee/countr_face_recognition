@@ -35,7 +35,6 @@ public class FaceClient implements IFaceClient
 
     @Override
     public void Identify(){
-        // frameGrabber = new VideoInputFrameGrabber(0);
         frameGrabber = new VideoCapture(0);
         try {
             // frameGrabber.start();
@@ -58,11 +57,7 @@ public class FaceClient implements IFaceClient
 
     public static void main(String[] args) {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        // FaceClient faceClient = new FaceClient();
-        // faceClient.Identify();
-        // WHAT ARE YOU DOING RIGHT NOW?
-        // You are creating the zeromq connection. You need to get a matrix to bytes and send over the line....
-        Mat mat = Imgcodecs.imread("/home/dzly/projects/countr_face_recognition/yalefaces/subject01.normal.jpg.png");
+        Mat mat = Imgcodecs.imread("/home/dzlyy/projects/countr_face_recognition/yalefaces/subject01.normal.jpg.png");
         int channels = mat.channels();
         int type =  mat.type();
         int depth =  mat.depth();
@@ -70,10 +65,7 @@ public class FaceClient implements IFaceClient
         int width =  mat.width();
         byte[] b = new byte[height * width * channels];
         mat.get(0,0, b);
-        // MatOfByte matOfByte = new MatOfByte();
-        // Imgcodecs.imencode(".png", mat, matOfByte);
 
-        // byte[] b = matOfByte.toArray();
         System.out.println("Length of bytes "+ b.length);
         System.out.println("width "+ width);
         System.out.println("height "+ height);

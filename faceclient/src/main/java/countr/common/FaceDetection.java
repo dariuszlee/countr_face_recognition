@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import net.tzolov.cv.mtcnn.FaceAnnotation;
+import net.tzolov.cv.mtcnn.FaceAnnotation.BoundingBox;
 import net.tzolov.cv.mtcnn.MtcnnService;
 import net.tzolov.cv.mtcnn.MtcnnUtil;
 
@@ -23,48 +24,70 @@ import static org.nd4j.linalg.indexing.NDArrayIndex.point;
 import static org.nd4j.linalg.indexing.NDArrayIndex.interval;
 
 public class FaceDetection {
+    MtcnnService  mtcnnService;
+    ObjectMapper jsonMapper;
+    boolean isDebug;
+
+    public FaceDetection(boolean isDebug){
+		this.mtcnnService = new MtcnnService(30, 0.709, new double[] { 0.6, 0.7, 0.7 });
+		this.jsonMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+        this.isDebug = isDebug;
+    }
+
+    public BufferedImage detect(BufferedImage inputImage) throws IOException {
+        // 2. Run face detection
+        Java2DNativeImageLoader imageLoader = new Java2DNativeImageLoader();
+        INDArray ndImage3HW = imageLoader.asMatrix(inputImage).get(point(0), interval(0, 3), all(), all());
+        FaceAnnotation[] faceAnnotations = this.mtcnnService.faceDetection(ndImage3HW);
+        System.out.println(faceAnnotations);
+
+        if(this.isDebug){
+            // 3. Augment the input image with the detected faces
+            BufferedImage annotatedImage = MtcnnUtil.drawFaceAnnotations(inputImage, faceAnnotations);
+            // 4. Store face-annotated image
+            ImageIO.write(annotatedImage, "png", new File("./AnnotatedImage.png"));
+            
+            // 5. Print the face annotations as JSON
+            System.out.println("Face Annotations (JSON): " + jsonMapper.writeValueAsString(faceAnnotations));
+        }
+
+        int margin = 44;
+        int alignedImageSize = 112;
+        FaceAnnotation bbox = this.getBiggestFace(faceAnnotations);
+        INDArray alignedFace = mtcnnService.faceAlignment(ndImage3HW, bbox, margin, alignedImageSize, false);
+        BufferedImage image = new Java2DNativeImageLoader().asBufferedImage(alignedFace);
+
+        return image;
+    }
+
+    private FaceAnnotation getBiggestFace(FaceAnnotation [] faces){
+        int largestArea = 0;
+        FaceAnnotation largestAreaIndex = null;
+        for(FaceAnnotation face : faces){
+            BoundingBox bbox = face.getBoundingBox();
+            int area =  bbox.getW() * bbox.getH();
+            if(area > largestArea){
+                largestAreaIndex = face;
+                largestArea = area;
+            }
+        }
+        return largestAreaIndex;
+    }
 
 	public static void main(String[] args) throws IOException {
-
-		MtcnnService mtcnnService = new MtcnnService(30, 0.709, new double[] { 0.6, 0.7, 0.7 });
-
-		ObjectMapper jsonMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-
 		ResourceLoader resourceLoader = new DefaultResourceLoader();
+
+        FaceDetection faceDetector = new FaceDetection(true);
 
 		try (InputStream imageInputStream = resourceLoader.getResource("classpath:/trainer_reference.jpg").getInputStream()) {
 
 			// 1. Load the input image (you can use http:/, file:/ or classpath:/ URIs to resolve the input image
 			BufferedImage inputImage = ImageIO.read(imageInputStream);
 
-			// 2. Run face detection
-            Java2DNativeImageLoader imageLoader = new Java2DNativeImageLoader();
-            INDArray ndImage3HW = imageLoader.asMatrix(inputImage).get(point(0), interval(0, 3), all(), all());
-			FaceAnnotation[] faceAnnotations = mtcnnService.faceDetection(ndImage3HW);
-            System.out.println(faceAnnotations);
+            BufferedImage image = faceDetector.detect(inputImage);
 
-
-			// 3. Augment the input image with the detected faces
-			BufferedImage annotatedImage = MtcnnUtil.drawFaceAnnotations(inputImage, faceAnnotations);
-
-			// 4. Store face-annotated image
-			ImageIO.write(annotatedImage, "png", new File("./AnnotatedImage.png"));
-
-			// 5. Print the face annotations as JSON
-			System.out.println("Face Annotations (JSON): " + jsonMapper.writeValueAsString(faceAnnotations));
-
-            int margin = 44;
-            int alignedImageSize = 112;
-            for (FaceAnnotation bbox : faceAnnotations) {
-                INDArray alignedFace = mtcnnService.faceAlignment(ndImage3HW, bbox, margin, alignedImageSize, false);
-
-                BufferedImage image = new Java2DNativeImageLoader().asBufferedImage(alignedFace);
-                ImageIO.write(image, "jpg", new File("./cropped" + ".jpg"));
-                System.out.println(".");
-
-            }
-                
-            
+            ImageIO.write(image, "jpg", new File("./cropped" + ".jpg"));
+            System.out.println(".");
 		}
 	}
 }
