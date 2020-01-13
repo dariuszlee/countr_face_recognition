@@ -39,7 +39,11 @@ public class FaceDetection {
         Java2DNativeImageLoader imageLoader = new Java2DNativeImageLoader();
         INDArray ndImage3HW = imageLoader.asMatrix(inputImage).get(point(0), interval(0, 3), all(), all());
         FaceAnnotation[] faceAnnotations = this.mtcnnService.faceDetection(ndImage3HW);
-        System.out.println(faceAnnotations);
+
+        System.out.println("Face length" + faceAnnotations.length);
+        if(faceAnnotations.length == 0) {
+            return null;
+        }
 
         if(this.isDebug){
             // 3. Augment the input image with the detected faces
@@ -50,6 +54,7 @@ public class FaceDetection {
             // 5. Print the face annotations as JSON
             System.out.println("Face Annotations (JSON): " + jsonMapper.writeValueAsString(faceAnnotations));
         }
+
 
         int margin = 44;
         int alignedImageSize = 112;

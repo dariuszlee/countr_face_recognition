@@ -39,3 +39,7 @@ https://www.dropbox.com/s/tj96fsm6t6rq8ye/model-r100-arcface-ms1m-refine-v2.zip?
 ## Cross Compatability
 
 In dependencies, you may need to add windows support for nd4j. Only linux-x86_64-avx2 is on now.
+
+## Gstreamer Segmentation Fault
+
+Build opencv and remove GStreamer support

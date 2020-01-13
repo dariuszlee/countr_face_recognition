@@ -15,17 +15,30 @@ import org.zeromq.ZContext;
 
 import org.apache.commons.lang3.SerializationUtils;
 
+import org.opencv.videoio.VideoCapture;
+
 public class FaceClient implements IFaceClient
 {
     enum State {
         Closed,
         Running
     }
+
     private State state;
     private VideoCapture frameGrabber;
 
     public FaceClient() {
         state = State.Closed;
+    }
+
+    public Mat ReadCamera(){
+        VideoCapture vc = new VideoCapture();
+        vc.open(0);
+        Mat matrix = new Mat();
+        boolean res = vc.read(matrix);
+
+        vc.release();
+        return matrix;
     }
 
     @Override
@@ -55,9 +68,10 @@ public class FaceClient implements IFaceClient
 
     }
 
-    public static void main(String[] args) {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        Mat mat = Imgcodecs.imread("/home/dzlyy/projects/countr_face_recognition/yalefaces/subject01.normal.jpg.png");
+    public void main2(){
+        // Mat mat = Imgcodecs.imread("/home/dzlyy/projects/countr_face_recognition/yalefaces/subject01.normal.jpg.png");
+        FaceClient faceClient = new FaceClient();
+        Mat mat = faceClient.ReadCamera();
         int channels = mat.channels();
         int type =  mat.type();
         int depth =  mat.depth();
@@ -98,5 +112,12 @@ public class FaceClient implements IFaceClient
                         requestNbr);
             }
         }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Core.NATIVE_LIBRARY_NAME);
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        FaceClient fc = new FaceClient();
+        fc.main2();
     }
 }
