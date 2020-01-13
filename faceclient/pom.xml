@@ -28,7 +28,7 @@
     <jmh.version>1.21</jmh.version>
     <apache.commons>1.17</apache.commons>
     <spring-framework.version>5.0.7.RELEASE</spring-framework.version>
-    <jackson.version>2.9.6</jackson.version>
+    <jackson.version>2.10.2</jackson.version>
 </properties>
 <repositories>
     <repository>
