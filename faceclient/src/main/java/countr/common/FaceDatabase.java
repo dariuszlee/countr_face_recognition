@@ -5,26 +5,24 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 import java.util.List;
+import java.util.ArrayList;
 
-import org.apache.mxnet.javaapi.NDArray;
-import org.apache.mxnet.javaapi.Context;
-import org.apache.mxnet.javaapi.Shape;
+import org.nd4j.linalg.cpu.nativecpu.NDArray;
 
 public class FaceDatabase {
     private static String createIdTable = "CREATE TABLE IF NOT EXISTS faces(\n"
-                + "    id integer NOT NULL,\n"
-                + "    embedding text NOT NULL,\n"
+                + "    id text NOT NULL,\n"
+                + "    embedding text NOT NULL\n"
                 + ");";
     private static String selectAll = "SELECT * from faces;";
-    private static String insertSql = "INSERT INTO faces(id, embedding) VALUES(?, ?);";
+    private static String insertSql = "INSERT INTO faces(id, embedding) VALUES(?, ?)";
 
     private Connection conn;
-    private Context ctx;
     
-    public FaceDatabase(Context ctx) throws SQLException {
-        this.ctx = ctx;
+    public FaceDatabase() throws SQLException {
 
         String dbUri = "jdbc:sqlite:./face.db";
         conn = DriverManager.getConnection(dbUri);
@@ -33,35 +31,43 @@ public class FaceDatabase {
     }
 
     public List<FaceEmbedding> get(){
-        Statement stmt = conn.createStatement();    
-        ResultSet rs = stmt.executeQuery(selectAll);
-
         ArrayList<FaceEmbedding> results = new ArrayList<FaceEmbedding>();
-        while(rs.next()){
-            FaceEmbedding fEmbedding = new FaceEmbedding(rs.getInt("id"),
-                    this.generateEmbedding(rs.getString("embedding")));
-            results.add(fEmbedding); 
+        try(Statement stmt = conn.createStatement();    
+            ResultSet rs = stmt.executeQuery(selectAll);){
+            while(rs.next()){
+                FaceEmbedding fEmbedding = new FaceEmbedding(rs.getInt("id"),
+                        this.generateEmbedding(rs.getString("embedding")));
+                results.add(fEmbedding); 
+            }
         }
+        catch(Exception e){
+
+        }
+
         return results;
     }
 
     public void Insert(int id, NDArray embedding){
         String stringEmbedding = this.generateStringEmbedding(embedding);
+        try(PreparedStatement pstmt = conn.prepareStatement(insertSql);){
+            pstmt.setInt(1, id);
+            pstmt.setString(2, stringEmbedding);
+            pstmt.executeUpdate();
+        }
+        catch(Exception e){
 
-        PreparedStatement pstmt = conn.prepareStatement(sql);
-        pstmt.setInt(1, id);
-        pstmt.setString(2, stringEmbedding);
-        pstmt.executeUpdate();
+        }
     }
 
     public static NDArray generateEmbedding(String embeddingString){
         String[] vals = embeddingString.split(",");
-        ArrayList<float> embeddingVals = new ArrayList<float>();
+        float[] arrayFeatures = new float[vals.length];
+        int count = 0;
         for(String val : vals){
-            System.out.println(val);
-            embeddingVals.add(val);
+            arrayFeatures[count] = Float.valueOf(val);
+            count += 1;
         }
-        return new NDArray(embeddingVals.toArray());
+        return new NDArray(arrayFeatures, new int[]{1, arrayFeatures.length});
     }
 
     public static String generateStringEmbedding(NDArray embedding){
@@ -75,14 +81,14 @@ public class FaceDatabase {
     }
 
     public static void main(String[] args) {
-        FaceDatabase fDb = new FaceDatabase();
-        fDb.Insert(1, new NDArray(new float[]{1, 2, 3}, new Shape(new int[]{1, 3}), ctx));
-        System.out.println(fDb.get());
+        try {
+            FaceDatabase fDb = new FaceDatabase();
+            fDb.Insert(1, new NDArray(new float[]{1, 2, 3}, new int[]{1, 3}));
+            System.out.println(fDb.get());
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
     }
     
-}
-
-class FaceEmbedding{
-    private int Id;
-    private NDArray Embedding;
 }
