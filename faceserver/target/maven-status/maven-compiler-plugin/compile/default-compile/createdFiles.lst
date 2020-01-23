@@ -1,8 +1,13 @@
 countr/faceclient/FaceClient$State.class
+countr/common/RecognitionMessage.class
+countr/common/FaceDatabase.class
 countr/faceclient/FaceRecognitionInfo.class
+countr/faceserver/Session.class
 countr/faceserver/FaceServer.class
+countr/common/FaceEmbedding.class
 countr/common/FaceDetection.class
 countr/common/MXNetUtils.class
 countr/faceclient/FaceClient.class
 countr/faceclient/IFaceClient.class
 countr/faceserver/IFaceServer.class
+countr/faceserver/SessionInitializationFailure.class

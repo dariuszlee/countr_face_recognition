@@ -7,3 +7,4 @@ faceclient/target/
 .project
 .settings/
 model-r100-ii
+target/

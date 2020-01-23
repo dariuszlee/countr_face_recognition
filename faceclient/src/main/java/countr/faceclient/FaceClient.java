@@ -8,6 +8,7 @@ import org.opencv.videoio.VideoCapture;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.videoio.VideoCapture;
 
 import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
@@ -15,7 +16,12 @@ import org.zeromq.ZContext;
 
 import org.apache.commons.lang3.SerializationUtils;
 
-import org.opencv.videoio.VideoCapture;
+
+import org.apache.commons.configuration2.builder.fluent.Configurations;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import java.io.File;
+
 
 public class FaceClient implements IFaceClient
 {
@@ -27,7 +33,10 @@ public class FaceClient implements IFaceClient
     private State state;
     private VideoCapture frameGrabber;
 
-    public FaceClient() {
+    public FaceClient() throws ConfigurationException{
+        Configurations configs = new Configurations();
+        Configuration config = configs.properties(new File("client.properties"));
+
         state = State.Closed;
     }
 
@@ -68,9 +77,8 @@ public class FaceClient implements IFaceClient
 
     }
 
-    public void main2(){
+    public void main2(FaceClient faceClient){
         // Mat mat = Imgcodecs.imread("/home/dzlyy/projects/countr_face_recognition/yalefaces/subject01.normal.jpg.png");
-        FaceClient faceClient = new FaceClient();
         Mat mat = faceClient.ReadCamera();
         int channels = mat.channels();
         int type =  mat.type();
@@ -117,7 +125,14 @@ public class FaceClient implements IFaceClient
     public static void main(String[] args) {
         System.out.println(Core.NATIVE_LIBRARY_NAME);
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        FaceClient fc = new FaceClient();
-        fc.main2();
+        FaceClient fc = null;
+        try {
+            fc = new FaceClient();
+        }
+        catch (ConfigurationException ex){
+            System.out.println(ex);
+            System.exit(1);
+        }
+        fc.main2(fc);
     }
 }
