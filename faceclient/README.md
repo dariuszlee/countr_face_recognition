@@ -43,3 +43,16 @@ In dependencies, you may need to add windows support for nd4j. Only linux-x86_64
 ## Gstreamer Segmentation Fault
 
 Build opencv and remove GStreamer support
+
+## Recognition Threshold
+
+1. User can control how many frames are sent to the server. He does so within a session so we can control how many 
+2. User can control which "group of faces" he is operating with
+
+1. Server limits number of attempts by a single session (configurable).
+2. Server has configurable threshold limits.
+
+## 2020-01-17 Todo
+
+1. Jenkins "Clean" build. 
+2. Simple Demo Code through command line

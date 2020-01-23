@@ -1,6 +1,6 @@
 package countr.common;
 
-import org.apache.mxnet.javaapi.NDArray;
+import org.nd4j.linalg.cpu.nativecpu.NDArray;
 
 public class FaceEmbedding{
     private int Id;

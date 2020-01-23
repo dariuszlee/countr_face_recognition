@@ -4,6 +4,8 @@ import java.util.UUID;
 import java.util.HashMap;
 import java.util.List;
 
+import org.nd4j.linalg.cpu.nativecpu.NDArray;
+
 import java.sql.SQLException;
 
 import org.apache.mxnet.javaapi.Context;

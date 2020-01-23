@@ -71,7 +71,7 @@ public class FaceDatabase {
     }
 
     public static String generateStringEmbedding(NDArray embedding){
-        float[] individualVals = embedding.toArray();
+        float[] individualVals = embedding.data().asFloat();
         String strBuilder = "";
         for(float val : individualVals){
             strBuilder += val;
