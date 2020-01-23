@@ -1,0 +1,8 @@
+countr/faceclient/FaceClient$State.class
+countr/faceclient/FaceRecognitionInfo.class
+countr/faceserver/FaceServer.class
+countr/common/FaceDetection.class
+countr/common/MXNetUtils.class
+countr/faceclient/FaceClient.class
+countr/faceclient/IFaceClient.class
+countr/faceserver/IFaceServer.class
