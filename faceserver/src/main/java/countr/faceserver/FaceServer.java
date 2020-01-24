@@ -1,97 +1,101 @@
 package countr.faceserver;
 
-import countr.common.MXNetUtils;
-import countr.common.FaceDetection;
-
-import java.util.List;
-import org.apache.mxnet.javaapi.NDArray;
-
-import java.io.IOException;
-
-import org.apache.commons.lang3.SerializationUtils;
-
-import countr.common.RecognitionMessage;
-import countr.faceserver.IFaceServer;
-
-import org.opencv.core.Core;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-
-import java.io.ByteArrayInputStream;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 import javax.imageio.ImageIO;
 
-import org.zeromq.ZMQ;
-import org.zeromq.ZContext;
-
-import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
-import java.io.File;
+import org.apache.commons.lang3.SerializationUtils;
+import org.apache.mxnet.javaapi.NDArray;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.zeromq.ZContext;
+import org.zeromq.ZMQ;
+
+import countr.common.FaceDetection;
+import countr.common.MXNetUtils;
+import countr.common.RecognitionMessage;
+import countr.common.RecognitionMessage.MessageType;
+import countr.common.RecognitionResult;
 
 
 public class FaceServer implements IFaceServer{
     MXNetUtils resnet100;
     FaceDetection faceDetector;
     int port;
+    ZContext zContext;
 
     public FaceServer(boolean isGpu, String modelPath, int port, boolean isDebug) {
         this.resnet100 = new MXNetUtils(isGpu, modelPath);
         this.faceDetector = new FaceDetection(isDebug);
         this.port = port;
+        this.zContext = new ZContext();
     }
 
     public void Start(){
     };
 
-    public void Recognize(){
+    public RecognitionResult Recognize(RecognitionMessage message ){
+        byte[] data = message.getImage();
+        int width = message.getWidth();
+        int height = message.getHeight();
+        int imageType = message.getImageType();
+
+        Mat mat = new Mat(height, width, imageType);
+        mat.put(0,0, data);
+        MatOfByte mob = new MatOfByte();
+        Imgcodecs.imencode(".png", mat, mob);
+        try {
+            BufferedImage inputImage = ImageIO.read(new ByteArrayInputStream(mob.toArray()));
+            File newFile = new File("test_output.png");
+            ImageIO.write(inputImage, "png", newFile);
+            BufferedImage faceImage = this.faceDetector.detect(inputImage);
+            if(faceImage != null){
+                List<NDArray> recognitionVector = this.resnet100.predict(faceImage);
+            }
+        }
+        catch(IOException e){
+        }
+
+        return new RecognitionResult();
     }
 
     public void Listen() {
-        try (ZContext context = new ZContext()) {
+        try(ZMQ.Socket socket = this.zContext.createSocket(ZMQ.REP))  {
             // Socket to talk to clients
-            ZMQ.Socket socket = context.createSocket(ZMQ.REP);
-            socket.bind("tcp://*:5555");
+            socket.bind("tcp://*:" + this.port);
 
             while (!Thread.currentThread().isInterrupted()) {
                 // Block until a message is received
-                String response = "Failed";
                 byte[] reply = socket.recv(0);
                 RecognitionMessage yourObject = SerializationUtils.deserialize(reply);
 
-                // Print the message
-                System.out.println("Id: " + yourObject.getSender());
-                byte[] data = yourObject.getImage();
-                System.out.println("Id Length: " + yourObject.getImage().length);
+                MessageType type = yourObject.getType();
+                System.out.println("Message Type: " + type);
 
-                int width = yourObject.getWidth();
-                int height = yourObject.getHeight();
-                int type = yourObject.getType();
-                Mat mat = new Mat(height, width, type);
-                mat.put(0,0, data);
-
-                MatOfByte mob=new MatOfByte();
-                Imgcodecs.imencode(".png", mat, mob);
-                try {
-                    BufferedImage inputImage = ImageIO.read(new ByteArrayInputStream(mob.toArray()));
-                    File newFile = new File("test_output.png");
-                    ImageIO.write(inputImage, "png", newFile);
-                    BufferedImage faceImage = this.faceDetector.detect(inputImage);
-                    if(faceImage != null){
-                        List<NDArray> recognitionVector = this.resnet100.predict(faceImage);
-                        response = "More";
-                    }
+                RecognitionResult response = null;
+                switch (type){
+                    case Activate:
+                        break;
+                    case Deactivate:
+                        break;
+                    case Recognize:
+                        response = this.Recognize(message);
+                    case AddPhoto:
+                        break;
                 }
-                catch(IOException e){
-                }
-
-                // String outfile = String.format("/home/dzly/projects/countr_face_recognition/faceclient/output/%d.png", yourObject.getSender());
-                // boolean res = Imgcodecs.imwrite(outfile, mat);
-                // throw Exception("Help");
 
                 // Send a response
-                socket.send(response.getBytes(ZMQ.CHARSET), 0);
+                byte [] responseBytes = SerializationUtils.serialize(response);
+                socket.send(responseBytes, 0);
             }
         }
     }

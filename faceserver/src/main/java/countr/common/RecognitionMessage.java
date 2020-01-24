@@ -2,81 +2,58 @@ package countr.common;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.UUID;
 
 public class RecognitionMessage implements Serializable {
-    private byte[] image;
-    private Integer sender;
-    private int type;
-    private int width;
-    private int height;
+    public static enum MessageType {
+        Activate,
+        Deactivate,
+        Recognize,
+        AddPhoto
+    }
 
-    public RecognitionMessage(byte[] image, int type, 
-            int height, int width, Integer sender){
+    private final byte[] image;
+    private final UUID sender;
+    private final MessageType type;
+    private final int width;
+    private final int height;
+    private final int imageType;
+
+    public RecognitionMessage(final byte[] image, final MessageType type, 
+            final int height, final int width, final UUID sender, int imageType){
         this.image = image;
         this.sender = sender;
         this.type = type;
         this.width = width;
         this.height = height;
+        this.imageType = imageType;
     }
 
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
-    public byte[] getImage() {
-        return image;
-    }
-    public void setSender(Integer sender) {
-        this.sender = sender;
-    }
-    public Integer getSender() {
-        return sender;
+    public static RecognitionMessage createActivate(final UUID uuid){
+        return new RecognitionMessage(null, MessageType.Activate, 0, 0, uuid, 0);
     }
 
-    public int getType() {
-        return type;
+    public static RecognitionMessage createDeactivate(final UUID uuid){
+        return new RecognitionMessage(null, MessageType.Deactivate, 0, 0, uuid, 0);
     }
 
-    public void setType(int type) {
-        this.type = type;
+    public static RecognitionMessage createRecognize(final UUID uuid){
+        return new RecognitionMessage(null, MessageType.Recognize, 0, 0, uuid, 0);
     }
 
-    public int getWidth() {
-        return width;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
+    public static RecognitionMessage createAddPhoto(final UUID uuid){
+        return new RecognitionMessage(null, MessageType.AddPhoto, 0, 0, uuid, 0);
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + height;
-        result = prime * result + Arrays.hashCode(image);
-        result = prime * result + ((sender == null) ? 0 : sender.hashCode());
-        result = prime * result + type;
-        result = prime * result + width;
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj)
             return true;
         if (obj == null)
             return false;
         if (getClass() != obj.getClass())
             return false;
-        RecognitionMessage other = (RecognitionMessage) obj;
+        final RecognitionMessage other = (RecognitionMessage) obj;
         if (height != other.height)
             return false;
         if (!Arrays.equals(image, other.image))
@@ -91,5 +68,29 @@ public class RecognitionMessage implements Serializable {
         if (width != other.width)
             return false;
         return true;
+    }
+
+    public byte[] getImage() {
+        return image;
+    }
+
+    public UUID getSender() {
+        return sender;
+    }
+
+    public MessageType getType() {
+        return type;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public int getImageType() {
+        return imageType;
     }
 }

@@ -1,5 +1,7 @@
 package countr.faceserver;
 
+import countr.common.RecognitionMessage;
+
 public interface IFaceServer {
-    void Recognize(); 
+    void Recognize(RecognitionMessage message); 
 }
