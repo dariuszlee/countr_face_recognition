@@ -1,5 +1,7 @@
 package countr.common;
 
-public class RecognitionResult {
-    
+import java.io.Serializable;
+
+public class RecognitionResult implements Serializable {
+
 }

@@ -37,12 +37,12 @@ public class RecognitionMessage implements Serializable {
         return new RecognitionMessage(null, MessageType.Deactivate, 0, 0, uuid, 0);
     }
 
-    public static RecognitionMessage createRecognize(final UUID uuid){
-        return new RecognitionMessage(null, MessageType.Recognize, 0, 0, uuid, 0);
+    public static RecognitionMessage createRecognize(final byte[] b, int height, int width, int imageType, final UUID uuid){
+        return new RecognitionMessage(b, RecognitionMessage.MessageType.Recognize, height, width, uuid, imageType);
     }
 
-    public static RecognitionMessage createAddPhoto(final UUID uuid){
-        return new RecognitionMessage(null, MessageType.AddPhoto, 0, 0, uuid, 0);
+    public static RecognitionMessage createAddPhoto(final byte[] b, int height, int width, int imageType, final UUID uuid){
+        return new RecognitionMessage(b, RecognitionMessage.MessageType.AddPhoto, height, width, uuid, imageType);
     }
 
     @Override

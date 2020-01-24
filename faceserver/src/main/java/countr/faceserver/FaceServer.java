@@ -76,10 +76,10 @@ public class FaceServer implements IFaceServer{
             while (!Thread.currentThread().isInterrupted()) {
                 // Block until a message is received
                 byte[] reply = socket.recv(0);
-                RecognitionMessage yourObject = SerializationUtils.deserialize(reply);
+                RecognitionMessage message = SerializationUtils.deserialize(reply);
 
-                MessageType type = yourObject.getType();
-                System.out.println("Message Type: " + type);
+                MessageType type = message.getType();
+                System.out.println("Type: " + type);
 
                 RecognitionResult response = null;
                 switch (type){
