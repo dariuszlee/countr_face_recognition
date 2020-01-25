@@ -19,6 +19,22 @@ public class RecognitionMessage implements Serializable {
     private final int height;
     private final int imageType;
 
+    private final String userId;
+    private final int groupId;
+
+    public RecognitionMessage(final byte[] image, final MessageType type, 
+            final int height, final int width, final UUID sender, int imageType,
+            String userId, int groupId){
+        this.image = image;
+        this.sender = sender;
+        this.type = type;
+        this.width = width;
+        this.height = height;
+        this.imageType = imageType;
+        this.userId = userId;
+        this.groupId = groupId;
+    }
+
     public RecognitionMessage(final byte[] image, final MessageType type, 
             final int height, final int width, final UUID sender, int imageType){
         this.image = image;
@@ -27,6 +43,8 @@ public class RecognitionMessage implements Serializable {
         this.width = width;
         this.height = height;
         this.imageType = imageType;
+        this.userId = "";
+        this.groupId = 0;
     }
 
     public static RecognitionMessage createActivate(final UUID uuid){
@@ -41,8 +59,8 @@ public class RecognitionMessage implements Serializable {
         return new RecognitionMessage(b, RecognitionMessage.MessageType.Recognize, height, width, uuid, imageType);
     }
 
-    public static RecognitionMessage createAddPhoto(final byte[] b, int height, int width, int imageType, final UUID uuid){
-        return new RecognitionMessage(b, RecognitionMessage.MessageType.AddPhoto, height, width, uuid, imageType);
+    public static RecognitionMessage createAddPhoto(final byte[] b, int height, int width, int imageType, final UUID uuid, final String userId, final int groupId){
+        return new RecognitionMessage(b, RecognitionMessage.MessageType.AddPhoto, height, width, uuid, imageType, userId, groupId);
     }
 
     @Override

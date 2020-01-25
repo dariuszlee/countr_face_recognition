@@ -24,6 +24,8 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import countr.common.DebugUtils;
 import countr.common.RecognitionMessage;
+import countr.common.RecognitionMessage.MessageType;
+import countr.common.RecognitionResponse;
 
 
 public class FaceClient implements IFaceClient
@@ -61,22 +63,42 @@ public class FaceClient implements IFaceClient
         return matrix;
     }
 
-    @Override
-    public void Recognize(final Mat mat){
-        DebugUtils.printMatrixInfo(mat);
-
+    private byte[] matrixToBytes(Mat mat){
         final int channels = mat.channels();
-        final int imageType =  mat.type();
-        final int depth =  mat.depth();
         final int height =  mat.height();
         final int width =  mat.width();
         final byte[] b = new byte[height * width * channels];
         mat.get(0,0, b);
+        return b;
+    }
+
+    private RecognitionMessage matrixToRecognitionMessage(Mat mat, MessageType type){
+        final int channels = mat.channels();
+        final int imageType =  mat.type();
+        final int height =  mat.height();
+        final int width =  mat.width();
+        final byte[] b = new byte[height * width * channels];
+        mat.get(0,0, b);
+        return new RecognitionMessage(b, type, height, width, this.sessionId, imageType);
+    }
+
+    private RecognitionMessage matrixToRecognitionMessage(BufferedImage image, MessageType type){
+        Mat mat = this.convertImage(image);
+        return this.matrixToRecognitionMessage(mat, type);
+    }
+
+    @Override
+    public void Recognize(Mat mat){
+        if(mat.channels() == 1){
+            DebugUtils.printMatrixInfo(mat);
+            mat = this.convertImage(mat);
+        }
+        DebugUtils.printMatrixInfo(mat);
 
         try (ZMQ.Socket socket = this.zeroMqContext.createSocket(SocketType.REQ)){
             socket.connect(this.connectionString);
 
-            final RecognitionMessage message = RecognitionMessage.createRecognize(b, height, width, imageType, this.sessionId);
+            final RecognitionMessage message = this.matrixToRecognitionMessage(mat, MessageType.Recognize);
             final byte[] messageData = SerializationUtils.serialize(message);
             socket.send(messageData, 0);
 
@@ -86,24 +108,8 @@ public class FaceClient implements IFaceClient
     }
 
     public void Recognize(BufferedImage bf){
-        this.Recognize(this.convertImage(bf));
-    }
-
-    @Override
-    public void Identify(){
-        frameGrabber = new VideoCapture(0);
-        try {
-            // frameGrabber.start();
-           for(int i = 0; i < 10; i++){
-               final Mat matrix = new Mat();
-               System.out.println(matrix.type());
-               final boolean is_grabbed = frameGrabber.read(matrix);
-               Imgcodecs.imwrite((i++) + "-aa.jpg", matrix);
-           }
-        } 
-        catch (final Exception e) {
-            e.printStackTrace();
-        }
+        Mat mat = this.convertImage(bf);
+        this.Recognize(mat);
     }
 
     @Override
@@ -119,8 +125,22 @@ public class FaceClient implements IFaceClient
         System.out.println("Deactivation reply: " + reply);
     }
 
-    public void AddPhoto(final BufferedImage image){
-        
+    public void AddPhoto(final BufferedImage image, String userId, int groupId){
+        try(final ZMQ.Socket socket = this.zeroMqContext.createSocket(SocketType.REQ)){
+            socket.connect(this.connectionString);
+
+            Mat mat = this.convertImage(image);
+            byte[] dataBytes = this.matrixToBytes(mat);
+            final RecognitionMessage message = RecognitionMessage.createAddPhoto(dataBytes, image.getWidth(), image.getHeight(), mat.type(), this.sessionId, userId, groupId);
+
+            final byte[] messageData = SerializationUtils.serialize(message);
+            socket.send(messageData, 0);
+
+            final byte[] replyBytes = socket.recv(0);
+            RecognitionResult reply = SerializationUtils.deserialize(replyBytes);
+            System.out.println("AddPhoto reply: " + reply);
+
+        }
     }
 
     private UUID attemptConnect(){
@@ -143,7 +163,7 @@ public class FaceClient implements IFaceClient
 
 
     private Mat convertImage(final BufferedImage image){
-        final BufferedImage convertedImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        final BufferedImage convertedImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
         convertedImg.getGraphics().drawImage(image, 0, 0, null);
         byte[] pixels = ((DataBufferByte) convertedImg.getRaster().getDataBuffer()).getData();
 
@@ -158,21 +178,10 @@ public class FaceClient implements IFaceClient
         return rgbFrame;
     }
 
-    public void main2(final FaceClient faceClient){
-        // Mat mat = Imgcodecs.imread("/home/dzlyy/projects/countr_face_recognition/yalefaces/subject01.normal.jpg.png");
-        final Mat mat = this.ReadCamera();
-
-        System.out.println("Connecting to hello world server");
-        for (int requestNbr = 0; requestNbr != 10; requestNbr++) {
-            this.Recognize(mat);
-        }
-    }
-
     public static void main(final String[] args) {
         System.out.println(Core.NATIVE_LIBRARY_NAME);
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         FaceClient fc = null;
-        Mat m = null;
         try {
             fc = new FaceClient();
         }
@@ -180,38 +189,37 @@ public class FaceClient implements IFaceClient
             System.out.println(ex);
             System.exit(1);
         }
-        // fc.main2(fc);
         try (FileInputStream f = new FileInputStream("/home/dzly/projects/countr_face_recognition/face_python/yalefaces/subject01.normal.jpg.png")) {
             final BufferedImage image = ImageIO.read(f);
             System.out.println(image);
             System.out.println();
             System.out.println(image);
             fc.Recognize(image);
-        }
-        catch (final Exception e) {
-
-        }
-
-        System.out.println();
-        System.out.println();
-        try (FileInputStream f = new FileInputStream("/home/dzly/projects/countr_face_recognition/face_python/yalefaces/trainer_reference.png")) {
-            final BufferedImage image = ImageIO.read(f);
-            System.out.println(image);
+            System.out.println("Finished recognizing image 1");
             System.out.println();
-            System.out.println(image);
-
-            fc.Recognize(m);
         }
         catch (final Exception e) {
-
+            System.out.println(e);
         }
 
-        m = fc.ReadCamera();
         System.out.println();
-        System.out.println(m.channels());
-        System.out.println(m.type());
-        System.out.println(m.cols());
-        System.out.println(m.rows());
+        System.out.println();
+        BufferedImage image = null;
+        try (FileInputStream f = new FileInputStream("/home/dzly/projects/countr_face_recognition/face_python/yalefaces/trainer_reference.png")) {
+            image = ImageIO.read(f);
+        }
+        catch (final Exception e) {
+            System.out.println(e);
+        }
+        System.out.println();
+        System.out.println(image);
+        fc.Recognize(image);
+        System.out.println("Finished recognizing image 2");
+        System.out.println();
+
+        System.out.println();
+        System.out.println("Reading camera 3");
+        Mat m = fc.ReadCamera();
         // fc.AddPhoto(image);
         fc.Recognize(m);
 
