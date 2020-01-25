@@ -25,7 +25,7 @@ import org.zeromq.ZMQ;
 import countr.common.DebugUtils;
 import countr.common.RecognitionMessage;
 import countr.common.RecognitionMessage.MessageType;
-import countr.common.RecognitionResponse;
+import countr.common.RecognitionResult;
 
 
 public class FaceClient implements IFaceClient

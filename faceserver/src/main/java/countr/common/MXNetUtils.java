@@ -64,6 +64,10 @@ public class MXNetUtils {
         return res;
     }
 
+    private org.nd4j.linalg.cpu.nativecpu.NDArray converNdArray(NDArray feature){
+        float[] featureAsArray = feature.toArray();
+        return new org.nd4j.linalg.cpu.nativecpu.NDArray(featureAsArray);
+    }
 
     public static void main(String[] args) {
         // String modelPath = "/home/dzly/projects/countr_face_recognition/faceclient/model-r100-ii/model";

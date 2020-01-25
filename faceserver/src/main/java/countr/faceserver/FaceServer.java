@@ -20,6 +20,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
+import countr.common.FaceDatabase;
 import countr.common.FaceDetection;
 import countr.common.MXNetUtils;
 import countr.common.RecognitionMessage;
@@ -32,18 +33,20 @@ public class FaceServer implements IFaceServer{
     FaceDetection faceDetector;
     int port;
     ZContext zContext;
+    FaceDatabase faceDb; 
 
     public FaceServer(boolean isGpu, String modelPath, int port, boolean isDebug) {
         this.resnet100 = new MXNetUtils(isGpu, modelPath);
         this.faceDetector = new FaceDetection(isDebug);
         this.port = port;
         this.zContext = new ZContext();
+        this.faceDb = new FaceDatabase();
     }
 
     public void Start(){
     };
 
-    public RecognitionResult Recognize(RecognitionMessage message ){
+    public NDArray imageToFeatures(RecognitionMessage message ){
         byte[] data = message.getImage();
         int width = message.getWidth();
         int height = message.getHeight();
@@ -53,19 +56,31 @@ public class FaceServer implements IFaceServer{
         mat.put(0,0, data);
         MatOfByte mob = new MatOfByte();
         Imgcodecs.imencode(".png", mat, mob);
+
+        NDArray recognitionResult = new NDArray();
         try {
             BufferedImage inputImage = ImageIO.read(new ByteArrayInputStream(mob.toArray()));
             File newFile = new File("test_output.png");
             ImageIO.write(inputImage, "png", newFile);
             BufferedImage faceImage = this.faceDetector.detect(inputImage);
             if(faceImage != null){
-                List<NDArray> recognitionVector = this.resnet100.predict(faceImage);
+                recognitionResult =  this.resnet100.predict(faceImage).get(0); 
             }
         }
         catch(IOException e){
         }
 
-        return new RecognitionResult();
+        return recognitionResult;
+    }
+
+    public RecognitionResult Recognize(RecognitionMessage message){
+        NDArray feature = this.imageToFeatures(message);
+        return new RecognitionResult(feature, true);
+    }
+
+    public RecognitionResult AddPhoto(RecognitionMessage message){
+        NDArray feature = this.imageToFeatures(message);
+        faceDb.Insert(message.get);
     }
 
     public void Listen() {
@@ -90,7 +105,7 @@ public class FaceServer implements IFaceServer{
                     case Recognize:
                         response = this.Recognize(message);
                     case AddPhoto:
-                        break;
+                        response = this.AddPhoto(message);
                 }
 
                 // Send a response

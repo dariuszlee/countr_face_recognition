@@ -23,7 +23,6 @@ public class FaceDatabase {
     private Connection conn;
     
     public FaceDatabase() throws SQLException {
-
         String dbUri = "jdbc:sqlite:./face.db";
         conn = DriverManager.getConnection(dbUri);
         Statement stmt = conn.createStatement();
@@ -47,10 +46,10 @@ public class FaceDatabase {
         return results;
     }
 
-    public void Insert(int id, NDArray embedding){
+    public void Insert(String id, NDArray embedding){
         String stringEmbedding = this.generateStringEmbedding(embedding);
         try(PreparedStatement pstmt = conn.prepareStatement(insertSql);){
-            pstmt.setInt(1, id);
+            pstmt.setString(1, id);
             pstmt.setString(2, stringEmbedding);
             pstmt.executeUpdate();
         }
