@@ -15,10 +15,11 @@ import org.nd4j.linalg.cpu.nativecpu.NDArray;
 public class FaceDatabase {
     private static String createIdTable = "CREATE TABLE IF NOT EXISTS faces(\n"
                 + "    id text NOT NULL,\n"
-                + "    embedding text NOT NULL\n"
+                + "    embedding text NOT NULL,\n"
+                + "    groupid int NOT NULL\n"
                 + ");";
     private static String selectAll = "SELECT * from faces;";
-    private static String insertSql = "INSERT INTO faces(id, embedding) VALUES(?, ?)";
+    private static String insertSql = "INSERT INTO faces(id, embedding, groupId) VALUES(?, ?, ?)";
 
     private Connection conn;
     
@@ -46,11 +47,12 @@ public class FaceDatabase {
         return results;
     }
 
-    public void Insert(String id, NDArray embedding){
+    public void Insert(String id, NDArray embedding, int groupId){
         String stringEmbedding = this.generateStringEmbedding(embedding);
         try(PreparedStatement pstmt = conn.prepareStatement(insertSql);){
             pstmt.setString(1, id);
             pstmt.setString(2, stringEmbedding);
+            pstmt.setInt(3, groupId);
             pstmt.executeUpdate();
         }
         catch(Exception e){
@@ -82,7 +84,7 @@ public class FaceDatabase {
     public static void main(String[] args) {
         try {
             FaceDatabase fDb = new FaceDatabase();
-            fDb.Insert(1, new NDArray(new float[]{1, 2, 3}, new int[]{1, 3}));
+            fDb.Insert("1", new NDArray(new float[]{1, 2, 3}, new int[]{1, 3}), 1);
             System.out.println(fDb.get());
         }
         catch(Exception e){

@@ -111,4 +111,19 @@ public class RecognitionMessage implements Serializable {
     public int getImageType() {
         return imageType;
     }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public int getGroupId() {
+        return groupId;
+    }
+
+    @Override
+    public String toString() {
+        return "RecognitionMessage [groupId=" + groupId + ", height=" + height + ", image=" + Arrays.toString(image)
+                + ", imageType=" + imageType + ", sender=" + sender + ", type=" + type + ", userId=" + userId
+                + ", width=" + width + "]";
+    }
 }

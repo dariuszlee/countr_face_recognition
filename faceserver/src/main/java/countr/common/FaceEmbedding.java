@@ -3,20 +3,13 @@ package countr.common;
 import org.nd4j.linalg.cpu.nativecpu.NDArray;
 
 public class FaceEmbedding{
-    private int Id;
+    private String Id;
     private NDArray Embedding;
+    private int GroupId;
 
-    public FaceEmbedding(int id, NDArray embedding) {
+    public FaceEmbedding(String id, NDArray embedding) {
         Id = id;
         Embedding = embedding;
-    }
-
-    public int getId() {
-        return Id;
-    }
-
-    public void setId(int id) {
-        Id = id;
     }
 
     public NDArray getEmbedding() {
@@ -27,4 +20,19 @@ public class FaceEmbedding{
         Embedding = embedding;
     }
 
+    public void setId(String id) {
+        Id = id;
+    }
+
+    public int getGroupId() {
+        return GroupId;
+    }
+
+    public void setGroupId(int groupId) {
+        GroupId = groupId;
+    }
+
+    public String getId() {
+        return Id;
+    }
 }

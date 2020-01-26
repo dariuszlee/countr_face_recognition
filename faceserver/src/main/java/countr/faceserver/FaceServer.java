@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -12,7 +13,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.SerializationUtils;
-import org.apache.mxnet.javaapi.NDArray;
+import org.nd4j.linalg.cpu.nativecpu.NDArray;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -40,7 +41,12 @@ public class FaceServer implements IFaceServer{
         this.faceDetector = new FaceDetection(isDebug);
         this.port = port;
         this.zContext = new ZContext();
-        this.faceDb = new FaceDatabase();
+        try {
+            this.faceDb = new FaceDatabase();
+        }
+        catch (SQLException ex){
+            System.out.println("Unable to create database...");    
+        }
     }
 
     public void Start(){
@@ -64,7 +70,7 @@ public class FaceServer implements IFaceServer{
             ImageIO.write(inputImage, "png", newFile);
             BufferedImage faceImage = this.faceDetector.detect(inputImage);
             if(faceImage != null){
-                recognitionResult =  this.resnet100.predict(faceImage).get(0); 
+                recognitionResult =  this.resnet100.predict(faceImage); 
             }
         }
         catch(IOException e){
@@ -80,7 +86,8 @@ public class FaceServer implements IFaceServer{
 
     public RecognitionResult AddPhoto(RecognitionMessage message){
         NDArray feature = this.imageToFeatures(message);
-        faceDb.Insert(message.get);
+        faceDb.Insert(message.getUserId(), feature, message.getGroupId());
+        return new RecognitionResult(feature, true);
     }
 
     public void Listen() {

@@ -17,6 +17,8 @@ import net.tzolov.cv.mtcnn.MtcnnUtil;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 
+import countr.utils.DebugUtils;
+
 import org.datavec.image.loader.Java2DNativeImageLoader;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import static org.nd4j.linalg.indexing.NDArrayIndex.all;
@@ -40,8 +42,9 @@ public class FaceDetection {
         INDArray ndImage3HW = imageLoader.asMatrix(inputImage).get(point(0), interval(0, 3), all(), all());
         FaceAnnotation[] faceAnnotations = this.mtcnnService.faceDetection(ndImage3HW);
 
-        System.out.println("Face length" + faceAnnotations.length);
+        System.out.println("Face length: " + faceAnnotations.length);
         if(faceAnnotations.length == 0) {
+            DebugUtils.saveImage(inputImage);
             return null;
         }
 

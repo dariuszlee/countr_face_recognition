@@ -5,11 +5,10 @@
 <modelVersion>4.0.0</modelVersion>
 
 <groupId>org.countr</groupId>
-<artifactId>faceclient</artifactId>
+<artifactId>facecommon</artifactId>
 <version>1.0-SNAPSHOT</version>
 
-<name>faceclient</name>
-    <!-- FIXME change it to the project's website -->
+<name>facecommon</name>
 <url>https://dariuszlee.github.io/</url>
 
 <properties>
@@ -43,11 +42,6 @@
             <updatePolicy>daily</updatePolicy>  <!-- Optional, update daily -->
         </snapshots>
     </repository>
-
-    <!-- <repository> -->
-    <!--     <id>jcenter</id> -->
-    <!--     <url>https://jcenter.bintray.com/</url> -->
-    <!-- </repository> -->
 </repositories>
 
 <dependencies>
@@ -113,13 +107,6 @@
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.0.2</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>countr.faceclient.FaceClient</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-install-plugin</artifactId>
@@ -141,91 +128,4 @@
       </plugins>
   </pluginManagement>
   </build>
-  <profiles>
-      <profile>
-          <id>Client</id>
-          <build>
-              <pluginManagement>
-                  <plugins>
-                      <plugin>
-                          <groupId>org.codehaus.mojo</groupId>
-                          <artifactId>exec-maven-plugin</artifactId>
-                          <version>1.2.1</version>
-                          <configuration>
-                              <mainClass>countr.faceclient.FaceClient</mainClass>
-                          </configuration>
-                      </plugin>
-                  </plugins>
-              </pluginManagement>
-          </build>
-      </profile>
-      <profile>
-          <id>Server</id>
-          <build>
-              <pluginManagement>
-                  <plugins>
-                      <plugin>
-                          <groupId>org.codehaus.mojo</groupId>
-                          <artifactId>exec-maven-plugin</artifactId>
-                          <version>1.2.1</version>
-                          <configuration>
-                              <mainClass>countr.faceserver.FaceServer</mainClass>
-                          </configuration>
-                      </plugin>
-                  </plugins>
-              </pluginManagement>
-          </build>
-      </profile>
-      <profile>
-          <id>FaceDetection</id>
-          <build>
-              <pluginManagement>
-                  <plugins>
-                      <plugin>
-                          <groupId>org.codehaus.mojo</groupId>
-                          <artifactId>exec-maven-plugin</artifactId>
-                          <version>1.2.1</version>
-                          <configuration>
-                              <mainClass>countr.common.FaceDetection</mainClass>
-                          </configuration>
-                      </plugin>
-                  </plugins>
-              </pluginManagement>
-          </build>
-      </profile>
-      <profile>
-          <id>MXNet</id>
-          <build>
-              <pluginManagement>
-                  <plugins>
-                      <plugin>
-                          <groupId>org.codehaus.mojo</groupId>
-                          <artifactId>exec-maven-plugin</artifactId>
-                          <version>1.2.1</version>
-                          <configuration>
-                              <mainClass>countr.common.MXNetUtils</mainClass>
-                          </configuration>
-                      </plugin>
-                  </plugins>
-              </pluginManagement>
-          </build>
-      </profile>
-      <profile>
-          <id>FaceDatabase</id>
-          <build>
-              <pluginManagement>
-                  <plugins>
-                      <plugin>
-                          <groupId>org.codehaus.mojo</groupId>
-                          <artifactId>exec-maven-plugin</artifactId>
-                          <version>1.2.1</version>
-                          <configuration>
-                              <mainClass>countr.common.FaceDatabase</mainClass>
-                          </configuration>
-                      </plugin>
-                  </plugins>
-              </pluginManagement>
-          </build>
-      </profile>
-  </profiles>
 </project>

@@ -126,11 +126,17 @@ public class FaceClient implements IFaceClient
     }
 
     public void AddPhoto(final BufferedImage image, String userId, int groupId){
+        Mat mat = this.convertImage(image);
+        if (mat.channels() == 1){
+            DebugUtils.printMatrixInfo(mat);
+            mat = this.convertImage(mat);
+            DebugUtils.printMatrixInfo(mat);
+        }
+
+        byte[] dataBytes = this.matrixToBytes(mat);
         try(final ZMQ.Socket socket = this.zeroMqContext.createSocket(SocketType.REQ)){
             socket.connect(this.connectionString);
 
-            Mat mat = this.convertImage(image);
-            byte[] dataBytes = this.matrixToBytes(mat);
             final RecognitionMessage message = RecognitionMessage.createAddPhoto(dataBytes, image.getWidth(), image.getHeight(), mat.type(), this.sessionId, userId, groupId);
 
             final byte[] messageData = SerializationUtils.serialize(message);
@@ -194,7 +200,8 @@ public class FaceClient implements IFaceClient
             System.out.println(image);
             System.out.println();
             System.out.println(image);
-            fc.Recognize(image);
+            // fc.Recognize(image);
+            fc.AddPhoto(image, "2", 1);
             System.out.println("Finished recognizing image 1");
             System.out.println();
         }
