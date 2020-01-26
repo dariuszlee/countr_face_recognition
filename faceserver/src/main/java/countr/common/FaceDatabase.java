@@ -35,8 +35,9 @@ public class FaceDatabase {
         try(Statement stmt = conn.createStatement();    
             ResultSet rs = stmt.executeQuery(selectAll);){
             while(rs.next()){
-                FaceEmbedding fEmbedding = new FaceEmbedding(rs.getInt("id"),
-                        this.generateEmbedding(rs.getString("embedding")));
+                FaceEmbedding fEmbedding = new FaceEmbedding(rs.getString("id"),
+                        this.generateEmbedding(rs.getString("embedding")),
+                        rs.getGroupId());
                 results.add(fEmbedding); 
             }
         }
