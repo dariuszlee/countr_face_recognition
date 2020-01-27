@@ -44,7 +44,7 @@ public class FaceDetection {
 
         System.out.println("Face length: " + faceAnnotations.length);
         if(faceAnnotations.length == 0) {
-            DebugUtils.saveImage(inputImage);
+            DebugUtils.saveImage(inputImage, "received_after");
             return null;
         }
 

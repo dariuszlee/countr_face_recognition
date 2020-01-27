@@ -8,3 +8,4 @@ faceclient/target/
 .settings/
 model-r100-ii
 target/
+debug/

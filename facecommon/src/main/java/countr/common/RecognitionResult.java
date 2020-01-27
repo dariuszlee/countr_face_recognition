@@ -4,7 +4,7 @@ import java.io.Serializable;
 import org.nd4j.linalg.cpu.nativecpu.NDArray;
 
 public class RecognitionResult implements Serializable {
-    final NDArray result;
+    final float[] result;
     final boolean success;
 
     public RecognitionResult(NDArray result, boolean success) {
@@ -18,5 +18,10 @@ public class RecognitionResult implements Serializable {
 
     public boolean isSuccess() {
         return success;
+    }
+
+    @Override
+    public String toString() {
+        return "RecognitionResult [success=" + success + "]";
     }
 }

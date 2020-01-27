@@ -37,7 +37,7 @@ public class FaceDatabase {
             while(rs.next()){
                 FaceEmbedding fEmbedding = new FaceEmbedding(rs.getString("id"),
                         this.generateEmbedding(rs.getString("embedding")),
-                        rs.getGroupId());
+                        rs.getInt("groupid"));
                 results.add(fEmbedding); 
             }
         }

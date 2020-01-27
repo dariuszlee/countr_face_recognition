@@ -5,11 +5,12 @@ import org.nd4j.linalg.cpu.nativecpu.NDArray;
 public class FaceEmbedding{
     private String Id;
     private NDArray Embedding;
-    private int GroupId;
+    private int groupId;
 
-    public FaceEmbedding(String id, NDArray embedding) {
-        Id = id;
-        Embedding = embedding;
+    public FaceEmbedding(String id, NDArray embedding, int groupId) {
+        this.Id = id;
+        this.Embedding = embedding;
+        this.groupId = groupId;
     }
 
     public NDArray getEmbedding() {
@@ -25,11 +26,11 @@ public class FaceEmbedding{
     }
 
     public int getGroupId() {
-        return GroupId;
+        return groupId;
     }
 
     public void setGroupId(int groupId) {
-        GroupId = groupId;
+        groupId = groupId;
     }
 
     public String getId() {

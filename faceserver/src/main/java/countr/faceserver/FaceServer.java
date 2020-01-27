@@ -27,6 +27,7 @@ import countr.common.MXNetUtils;
 import countr.common.RecognitionMessage;
 import countr.common.RecognitionMessage.MessageType;
 import countr.common.RecognitionResult;
+import countr.utils.DebugUtils;
 
 
 public class FaceServer implements IFaceServer{
@@ -60,10 +61,12 @@ public class FaceServer implements IFaceServer{
 
         Mat mat = new Mat(height, width, imageType);
         mat.put(0,0, data);
+        DebugUtils.printMatrixInfo(mat);
+        DebugUtils.saveImage(mat, "received");
         MatOfByte mob = new MatOfByte();
         Imgcodecs.imencode(".png", mat, mob);
 
-        NDArray recognitionResult = new NDArray();
+        NDArray recognitionResult = null;
         try {
             BufferedImage inputImage = ImageIO.read(new ByteArrayInputStream(mob.toArray()));
             File newFile = new File("test_output.png");
@@ -86,6 +89,11 @@ public class FaceServer implements IFaceServer{
 
     public RecognitionResult AddPhoto(RecognitionMessage message){
         NDArray feature = this.imageToFeatures(message);
+        if(feature == null){
+            System.out.println("Feature Recognition failed..");
+            return new RecognitionResult(feature, false);
+        }
+
         faceDb.Insert(message.getUserId(), feature, message.getGroupId());
         return new RecognitionResult(feature, true);
     }
@@ -113,6 +121,8 @@ public class FaceServer implements IFaceServer{
                         response = this.Recognize(message);
                     case AddPhoto:
                         response = this.AddPhoto(message);
+                    default:
+                        System.out.println("Message not implemented...");
                 }
 
                 // Send a response
