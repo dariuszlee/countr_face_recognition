@@ -51,7 +51,7 @@ public class MXNetUtils {
         return resnet100;
     }
 
-    public org.nd4j.linalg.cpu.nativecpu.NDArray predict(BufferedImage inputImage) throws IOException {
+    public float[] predict(BufferedImage inputImage) throws IOException {
         Java2DNativeImageLoader imageLoader = new Java2DNativeImageLoader();
         INDArray ndImage3HW = imageLoader.asMatrix(inputImage).get(point(0), interval(0, 3), all(), all());
         float[] ints = ndImage3HW.data().asFloat();
@@ -64,9 +64,13 @@ public class MXNetUtils {
         return this.converNdArray(res.get(0));
     }
 
-    private org.nd4j.linalg.cpu.nativecpu.NDArray converNdArray(NDArray feature){
-        float[] featureAsArray = feature.toArray();
-        return new org.nd4j.linalg.cpu.nativecpu.NDArray(featureAsArray);
+    // private org.nd4j.linalg.cpu.nativecpu.NDArray converNdArray(NDArray feature){
+    //     float[] featureAsArray = feature.toArray();
+    //     return new org.nd4j.linalg.cpu.nativecpu.NDArray(featureAsArray);
+    // }
+
+    private float[] converNdArray(NDArray feature){
+        return feature.toArray();
     }
 
     public static void main(String[] args) {
@@ -80,7 +84,7 @@ public class MXNetUtils {
 		try (InputStream imageInputStream = new FileInputStream(imgPath)) {
             BufferedImage inputImage = ImageIO.read(imageInputStream);
 
-            org.nd4j.linalg.cpu.nativecpu.NDArray res = resnet100.predict(inputImage);
+            float[] res = resnet100.predict(inputImage);
             System.out.println(res);
         }
         catch(Exception e) {

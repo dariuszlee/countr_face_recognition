@@ -16,9 +16,9 @@ public class FaceDatabase {
     private static String createIdTable = "CREATE TABLE IF NOT EXISTS faces(\n"
                 + "    id text NOT NULL,\n"
                 + "    embedding text NOT NULL,\n"
-                + "    groupid int NOT NULL\n"
+                + "    groupId int NOT NULL\n"
                 + ");";
-    private static String selectAll = "SELECT * from faces;";
+    private static String selectAll = "SELECT * from faces WHERE groupId=?;";
     private static String insertSql = "INSERT INTO faces(id, embedding, groupId) VALUES(?, ?, ?)";
 
     private Connection conn;
@@ -30,22 +30,32 @@ public class FaceDatabase {
         stmt.execute(createIdTable);
     }
 
-    public List<FaceEmbedding> get(){
+    public List<FaceEmbedding> get(int groupId) throws SQLException {
         ArrayList<FaceEmbedding> results = new ArrayList<FaceEmbedding>();
-        try(Statement stmt = conn.createStatement();    
-            ResultSet rs = stmt.executeQuery(selectAll);){
+        try(PreparedStatement pstmt = conn.prepareStatement(selectAll);){
+            pstmt.setInt(1, groupId);
+            ResultSet rs = pstmt.executeQuery();
             while(rs.next()){
                 FaceEmbedding fEmbedding = new FaceEmbedding(rs.getString("id"),
                         this.generateEmbedding(rs.getString("embedding")),
-                        rs.getInt("groupid"));
+                        rs.getInt("groupId"));
                 results.add(fEmbedding); 
             }
         }
-        catch(Exception e){
-
-        }
 
         return results;
+    }
+
+    public void Insert(String id, float[] embedding, int groupId){
+        String stringEmbedding = this.generateStringEmbedding(embedding);
+        try(PreparedStatement pstmt = conn.prepareStatement(insertSql);){
+            pstmt.setString(1, id);
+            pstmt.setString(2, stringEmbedding);
+            pstmt.setInt(3, groupId);
+            pstmt.executeUpdate();
+        }
+        catch(Exception e){
+        }
     }
 
     public void Insert(String id, NDArray embedding, int groupId){
@@ -57,11 +67,10 @@ public class FaceDatabase {
             pstmt.executeUpdate();
         }
         catch(Exception e){
-
         }
     }
 
-    public static NDArray generateEmbedding(String embeddingString){
+    public static float[] generateEmbedding(String embeddingString){
         String[] vals = embeddingString.split(",");
         float[] arrayFeatures = new float[vals.length];
         int count = 0;
@@ -69,7 +78,17 @@ public class FaceDatabase {
             arrayFeatures[count] = Float.valueOf(val);
             count += 1;
         }
-        return new NDArray(arrayFeatures, new int[]{1, arrayFeatures.length});
+        return arrayFeatures;
+        // return new NDArray(arrayFeatures, new int[]{1, arrayFeatures.length});
+    }
+
+    public static String generateStringEmbedding(float[] embedding){
+        String strBuilder = "";
+        for(float val : embedding){
+            strBuilder += val;
+            strBuilder += ",";
+        }
+        return strBuilder.substring(0, strBuilder.length() - 1);
     }
 
     public static String generateStringEmbedding(NDArray embedding){
@@ -86,7 +105,7 @@ public class FaceDatabase {
         try {
             FaceDatabase fDb = new FaceDatabase();
             fDb.Insert("1", new NDArray(new float[]{1, 2, 3}, new int[]{1, 3}), 1);
-            System.out.println(fDb.get());
+            System.out.println(fDb.get(1));
         }
         catch(Exception e){
             System.out.println(e);

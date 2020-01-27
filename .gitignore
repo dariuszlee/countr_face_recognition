@@ -9,3 +9,4 @@ faceclient/target/
 model-r100-ii
 target/
 debug/
+face.db

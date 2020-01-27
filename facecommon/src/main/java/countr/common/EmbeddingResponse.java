@@ -2,6 +2,7 @@ package countr.common;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Arrays;
 
 public class EmbeddingResponse extends ServerResult {
     final List<FaceEmbedding> embeddings;
@@ -17,6 +18,6 @@ public class EmbeddingResponse extends ServerResult {
 
     @Override
     public String toString() {
-        return super.toString() + "EmbeddingResponse [embeddings=" + embeddings + "]";
+        return super.toString() + "EmbeddingResponse [embeddings=" + Arrays.toString(embeddings.toArray()) + "]";
     }
 }

@@ -2,6 +2,11 @@
 
 ## Critical
 1. Path fixing
+2. Deploy on RaspberryPi
+
+## Good To Have
+1. Add debugability to database - (ie. store image with embedding)
+2. Test different camera sources (ie. get lowest possible deployable quality)
 
 ## Automated Testing
 1. Unit Tests...

@@ -1,6 +1,7 @@
 package countr.common;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class FaceEmbedding implements Serializable{
     private String id;
@@ -35,5 +36,10 @@ public class FaceEmbedding implements Serializable{
 
     public String getId() {
         return id;
+    }
+
+    @Override
+    public String toString() {
+        return "FaceEmbedding [embedding=" + Arrays.toString(embedding) + ", groupId=" + groupId + ", id=" + id + "]";
     }
 }

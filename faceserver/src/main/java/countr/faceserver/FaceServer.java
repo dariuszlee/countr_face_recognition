@@ -23,10 +23,13 @@ import org.zeromq.ZMQ;
 
 import countr.common.FaceDatabase;
 import countr.common.FaceDetection;
+import countr.common.FaceEmbedding;
 import countr.common.MXNetUtils;
+import countr.common.EmbeddingResponse;
 import countr.common.RecognitionMessage;
 import countr.common.RecognitionMessage.MessageType;
 import countr.common.RecognitionResult;
+import countr.common.ServerResult;
 import countr.utils.DebugUtils;
 
 
@@ -37,7 +40,7 @@ public class FaceServer implements IFaceServer{
     ZContext zContext;
     FaceDatabase faceDb; 
 
-    public FaceServer(boolean isGpu, String modelPath, int port, boolean isDebug) {
+    public FaceServer(final boolean isGpu, final String modelPath, final int port, final boolean isDebug) {
         this.resnet100 = new MXNetUtils(isGpu, modelPath);
         this.faceDetector = new FaceDetection(isDebug);
         this.port = port;
@@ -45,7 +48,7 @@ public class FaceServer implements IFaceServer{
         try {
             this.faceDb = new FaceDatabase();
         }
-        catch (SQLException ex){
+        catch (final SQLException ex){
             System.out.println("Unable to create database...");    
         }
     }
@@ -53,49 +56,59 @@ public class FaceServer implements IFaceServer{
     public void Start(){
     };
 
-    public NDArray imageToFeatures(RecognitionMessage message ){
-        byte[] data = message.getImage();
-        int width = message.getWidth();
-        int height = message.getHeight();
-        int imageType = message.getImageType();
+    public float[] imageToFeatures(final RecognitionMessage message ){
+        final byte[] data = message.getImage();
+        final int width = message.getWidth();
+        final int height = message.getHeight();
+        final int imageType = message.getImageType();
 
-        Mat mat = new Mat(height, width, imageType);
+        final Mat mat = new Mat(height, width, imageType);
         mat.put(0,0, data);
         DebugUtils.printMatrixInfo(mat);
         DebugUtils.saveImage(mat, "received");
-        MatOfByte mob = new MatOfByte();
+        final MatOfByte mob = new MatOfByte();
         Imgcodecs.imencode(".png", mat, mob);
 
-        NDArray recognitionResult = null;
+        float[] recognitionResult = null;
         try {
-            BufferedImage inputImage = ImageIO.read(new ByteArrayInputStream(mob.toArray()));
-            File newFile = new File("test_output.png");
+            final BufferedImage inputImage = ImageIO.read(new ByteArrayInputStream(mob.toArray()));
+            final File newFile = new File("test_output.png");
             ImageIO.write(inputImage, "png", newFile);
-            BufferedImage faceImage = this.faceDetector.detect(inputImage);
+            final BufferedImage faceImage = this.faceDetector.detect(inputImage);
             if(faceImage != null){
                 recognitionResult =  this.resnet100.predict(faceImage); 
             }
         }
-        catch(IOException e){
+        catch(final IOException e){
         }
 
         return recognitionResult;
     }
 
-    public RecognitionResult Recognize(RecognitionMessage message){
-        NDArray feature = this.imageToFeatures(message);
+    public RecognitionResult Recognize(final RecognitionMessage message){
+        final float[] feature = this.imageToFeatures(message);
         return new RecognitionResult(feature, true);
     }
 
-    public RecognitionResult AddPhoto(RecognitionMessage message){
-        NDArray feature = this.imageToFeatures(message);
+    public RecognitionResult AddPhoto(final RecognitionMessage message){
+        final float[] feature = this.imageToFeatures(message);
         if(feature == null){
             System.out.println("Feature Recognition failed..");
             return new RecognitionResult(feature, false);
         }
 
-        faceDb.Insert(message.getUserId(), feature, message.getGroupId());
+        this.faceDb.Insert(message.getUserId(), feature, message.getGroupId());
         return new RecognitionResult(feature, true);
+    }
+
+    public EmbeddingResponse getEmbeddings(final RecognitionMessage message){
+        try {
+            final List<FaceEmbedding> embeddings = this.faceDb.get(message.getGroupId());
+            return new EmbeddingResponse(embeddings, true);
+        }
+        catch (final SQLException ex){
+            return new EmbeddingResponse(null, false);
+        }
     }
 
     public void Listen() {
@@ -105,13 +118,13 @@ public class FaceServer implements IFaceServer{
 
             while (!Thread.currentThread().isInterrupted()) {
                 // Block until a message is received
-                byte[] reply = socket.recv(0);
-                RecognitionMessage message = SerializationUtils.deserialize(reply);
+                final byte[] reply = socket.recv(0);
+                final RecognitionMessage message = SerializationUtils.deserialize(reply);
 
-                MessageType type = message.getType();
+                final MessageType type = message.getType();
                 System.out.println("Type: " + type);
 
-                RecognitionResult response = null;
+                ServerResult response = null;
                 switch (type){
                     case Activate:
                         break;
@@ -119,22 +132,27 @@ public class FaceServer implements IFaceServer{
                         break;
                     case Recognize:
                         response = this.Recognize(message);
+                        break;
                     case AddPhoto:
                         response = this.AddPhoto(message);
+                        break;
+                    case GetEmbeddings:
+                        response = this.getEmbeddings(message);
+                        break;
                     default:
                         System.out.println("Message not implemented...");
                 }
 
                 // Send a response
-                byte [] responseBytes = SerializationUtils.serialize(response);
+                final byte [] responseBytes = SerializationUtils.serialize(response);
                 socket.send(responseBytes, 0);
             }
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        Configurations configs = new Configurations();
+        final Configurations configs = new Configurations();
 
         String modelPath = "";
         boolean isGpu = false;
@@ -142,13 +160,13 @@ public class FaceServer implements IFaceServer{
         boolean isDebug = false;
         try
         {
-            Configuration config = configs.properties(new File("server.properties"));
+            final Configuration config = configs.properties(new File("server.properties"));
             port = config.getInt("server.port");
             isGpu = config.getBoolean("server.isgpu");
             modelPath = config.getString("server.modelpath");
             isDebug = config.getBoolean("server.isdebug");
         }
-        catch (ConfigurationException cex)
+        catch (final ConfigurationException cex)
         {
             System.out.println(cex);
             System.exit(1);
@@ -156,7 +174,7 @@ public class FaceServer implements IFaceServer{
 
         System.out.println("Starting server...");
 
-        FaceServer server = new FaceServer(isGpu, modelPath, port, isDebug);
+        final FaceServer server = new FaceServer(isGpu, modelPath, port, isDebug);
         server.Listen();
 
         System.out.println("Exiting...");

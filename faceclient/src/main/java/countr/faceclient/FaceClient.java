@@ -23,6 +23,7 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import countr.utils.DebugUtils;
+import countr.common.EmbeddingResponse;
 import countr.common.RecognitionMessage;
 import countr.common.RecognitionMessage.MessageType;
 import countr.common.RecognitionResult;
@@ -87,6 +88,20 @@ public class FaceClient implements IFaceClient
         return this.matrixToRecognitionMessage(mat, type);
     }
 
+    public void GetEmbeddings(int groupId) {
+        try (ZMQ.Socket socket = this.zeroMqContext.createSocket(SocketType.REQ)){
+            socket.connect(this.connectionString);
+
+            final RecognitionMessage message = RecognitionMessage.createGetEmbeddings(this.sessionId, groupId);
+            final byte[] messageData = SerializationUtils.serialize(message);
+            socket.send(messageData, 0);
+
+            final byte[] reply = socket.recv(0);
+            EmbeddingResponse replyMessage = SerializationUtils.deserialize(reply);
+            System.out.println(replyMessage);
+        }
+    }
+
     @Override
     public void Recognize(Mat mat){
         if(mat.channels() == 1){
@@ -103,6 +118,8 @@ public class FaceClient implements IFaceClient
             socket.send(messageData, 0);
 
             final byte[] reply = socket.recv(0);
+            RecognitionResult replyMessage = SerializationUtils.deserialize(reply);
+            System.out.println(replyMessage);
         }
 
     }
@@ -225,12 +242,15 @@ public class FaceClient implements IFaceClient
             System.out.println(ex);
             System.exit(1);
         }
+        int groupId = 1;
+
         String filePath = "/home/dzly/projects/countr_face_recognition/face_python/yalefaces/subject01.normal.jpg.png";
         final Mat image = Imgcodecs.imread(filePath);
         // fc.Recognize(image);
-        fc.AddPhoto(image, "2", 1);
+        fc.AddPhoto(image, "2", groupId);
         System.out.println("Finished recognizing image 1");
         System.out.println();
+        fc.GetEmbeddings(groupId);
 
         // System.out.println();
         // System.out.println();
