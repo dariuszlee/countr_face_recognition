@@ -3,12 +3,12 @@ package countr.common;
 import java.io.Serializable;
 import java.util.Arrays;
 
-public class RecognitionResult extends ServerResult {
+public class RecognitionResult implements Serializable extends ServerResult {
     final float[] result;
 
     public RecognitionResult(float[] result, boolean success) {
-        super(success);
         this.result = result;
+        super(success);
     }
 
     public float[] getResult() {
@@ -17,6 +17,6 @@ public class RecognitionResult extends ServerResult {
 
     @Override
     public String toString() {
-        return super.toString() + "RecognitionResult [result=" + Arrays.toString(result) + "]";
+        return "RecognitionResult [result=" + Arrays.toString(result) + ", success=" + success + "]";
     }
 }

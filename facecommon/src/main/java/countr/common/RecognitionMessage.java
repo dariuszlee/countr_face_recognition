@@ -9,7 +9,8 @@ public class RecognitionMessage implements Serializable {
         Activate,
         Deactivate,
         Recognize,
-        AddPhoto
+        AddPhoto,
+        GetEmbeddings
     }
 
     private final byte[] image;

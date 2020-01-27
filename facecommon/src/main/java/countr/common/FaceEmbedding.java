@@ -1,28 +1,28 @@
 package countr.common;
 
-import org.nd4j.linalg.cpu.nativecpu.NDArray;
+import java.io.Serializable;
 
-public class FaceEmbedding{
-    private String Id;
-    private NDArray Embedding;
+public class FaceEmbedding implements Serializable{
+    private String id;
+    private float[] embedding;
     private int groupId;
 
-    public FaceEmbedding(String id, NDArray embedding, int groupId) {
-        this.Id = id;
-        this.Embedding = embedding;
+    public FaceEmbedding(String id, float[] embedding, int groupId) {
+        this.id = id;
+        this.embedding = embedding;
         this.groupId = groupId;
     }
 
-    public NDArray getEmbedding() {
-        return Embedding;
+    public float[] getEmbedding() {
+        return embedding;
     }
 
-    public void setEmbedding(NDArray embedding) {
-        Embedding = embedding;
+    public void setEmbedding(float[] embedding) {
+        this.embedding = embedding;
     }
 
     public void setId(String id) {
-        Id = id;
+        this.id = id;
     }
 
     public int getGroupId() {
@@ -30,10 +30,10 @@ public class FaceEmbedding{
     }
 
     public void setGroupId(int groupId) {
-        groupId = groupId;
+        this.groupId = groupId;
     }
 
     public String getId() {
-        return Id;
+        return id;
     }
 }
