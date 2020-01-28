@@ -9,4 +9,9 @@ public class MatchResult extends ServerResult {
         super(success);
         this.matches = matches;
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + "MatchResult [matches=" + Arrays.toString(matches) + "]";
+    }
 }

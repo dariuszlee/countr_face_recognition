@@ -79,7 +79,7 @@ public class FaceServer implements IFaceServer{
             ImageIO.write(inputImage, "png", newFile);
             final BufferedImage faceImage = this.faceDetector.detect(inputImage);
             if(faceImage != null){
-                recognitionResult =  this.resnet100.predict(faceImage); 
+                recognitionResult = ComputeUtils.Normalize(this.resnet100.predict(faceImage)); 
             }
         }
         catch(final IOException e){

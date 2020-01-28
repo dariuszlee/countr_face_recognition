@@ -1,12 +1,28 @@
 package countr.utils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.lang.Math;
 
 import countr.common.FaceEmbedding;
 import countr.common.RecognitionMatch;
 
 public class ComputeUtils {
+    public static float EucDistance(float[] feature){
+        float dot = getDotProduct(feature, feature);
+        return (float) Math.sqrt(dot); 
+    }
+
+    public static float[] Normalize(float[] feature){
+        float distance = EucDistance(feature);
+        float[] normed = new float[feature.length];
+        for(int i = 0; i < normed.length; i++){
+            normed[i] = feature[i] / distance;
+        }
+        return normed;
+    }
+
     public static RecognitionMatch[] Match(float[] toMatch, FaceEmbedding[] database, int numberOfResults){
         PriorityQueue<RecognitionMatch> maxHeap = new PriorityQueue<RecognitionMatch>(numberOfResults);
         for(FaceEmbedding embedding : database){
@@ -40,5 +56,8 @@ public class ComputeUtils {
         for (RecognitionMatch r : results) {
             System.out.println(r);
         }
+
+        float[] normed = ComputeUtils.Normalize(new float[]{1, 5, 3});
+        System.out.println(Arrays.toString(normed));
     }
 }

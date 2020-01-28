@@ -278,8 +278,14 @@ public class FaceClient implements IFaceClient
 
         String filePath = "/home/dzly/projects/countr_face_recognition/face_python/yalefaces/subject01.normal.jpg.png";
         final Mat image = Imgcodecs.imread(filePath);
+        String filePath2 = "/home/dzly/projects/countr_face_recognition/face_python/yalefaces/trainer_reference.png";
+        final Mat image2 = Imgcodecs.imread(filePath2);
+        String filePath3 = "/home/dzly/projects/countr_face_recognition/face_python/yalefaces/subject02.normal.jpg.png";
+        final Mat image3 = Imgcodecs.imread(filePath3);
         // fc.Recognize(image);
-        fc.AddPhoto(image, userId, groupId);
+        fc.AddPhoto(image, filePath, groupId);
+        fc.AddPhoto(image2, filePath2, groupId);
+        fc.AddPhoto(image3, filePath3, groupId);
         fc.Match(image, groupId, maxResults);
         // fc.DeleteUser(userId, groupId);
         // System.out.println("Finished recognizing image 1");
