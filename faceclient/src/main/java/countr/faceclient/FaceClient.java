@@ -27,17 +27,13 @@ import countr.common.EmbeddingResponse;
 import countr.common.RecognitionMessage;
 import countr.common.RecognitionMessage.MessageType;
 import countr.common.RecognitionResult;
+import countr.common.ServerResult;
 
 
 public class FaceClient implements IFaceClient
 {
-    enum State {
-        Closed,
-        Running
-    }
     private final String connectionString;
 
-    private final State state;
     private VideoCapture frameGrabber;
     private final ZContext zeroMqContext;
     private final UUID sessionId;
@@ -47,8 +43,6 @@ public class FaceClient implements IFaceClient
         final Configuration config = configs.properties(new File("client.properties"));
 
         this.connectionString = "tcp://localhost:5555";
-
-        state = State.Closed;
 
         this.zeroMqContext = new ZContext();
         this.sessionId = this.attemptConnect();
@@ -194,6 +188,21 @@ public class FaceClient implements IFaceClient
         }
     }
 
+    public void DeleteUser(String userId, int groupId){
+        try(final ZMQ.Socket socket = this.zeroMqContext.createSocket(SocketType.REQ)){
+            socket.connect(this.connectionString);
+
+            final RecognitionMessage message = RecognitionMessage.createDeleteUser(this.sessionId, userId, groupId);
+
+            final byte[] messageData = SerializationUtils.serialize(message);
+            socket.send(messageData, 0);
+
+            final byte[] replyBytes = socket.recv(0);
+            ServerResult reply = SerializationUtils.deserialize(replyBytes);
+            System.out.println("AddPhoto reply: " + reply);
+        }
+    }
+
     private UUID attemptConnect(){
         System.out.println("Attempting registration with FaceServer...");
 
@@ -243,14 +252,15 @@ public class FaceClient implements IFaceClient
             System.exit(1);
         }
         int groupId = 1;
+        String userId = "2";
 
-        String filePath = "/home/dzly/projects/countr_face_recognition/face_python/yalefaces/subject01.normal.jpg.png";
+        String filePath = "/home/dzlyy/projects/countr_face_recognition/face_python/yalefaces/subject01.normal.jpg.png";
         final Mat image = Imgcodecs.imread(filePath);
         // fc.Recognize(image);
-        fc.AddPhoto(image, "2", groupId);
-        System.out.println("Finished recognizing image 1");
-        System.out.println();
-        fc.GetEmbeddings(groupId);
+        // fc.AddPhoto(image, userId, groupId);
+        fc.DeleteUser(userId, groupId);
+        // System.out.println("Finished recognizing image 1");
+        // System.out.println();
 
         // System.out.println();
         // System.out.println();
