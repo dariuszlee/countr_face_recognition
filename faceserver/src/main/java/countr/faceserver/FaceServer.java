@@ -110,6 +110,17 @@ public class FaceServer implements IFaceServer{
             return new EmbeddingResponse(null, false);
         }
     }
+    
+    public ServerResult deleteUser(final RecognitionMessage message){
+        try {
+            this.faceDb.delete(message.getUserId(), message.getGroupId());
+            return new ServerResult(true);
+        }
+        catch (final SQLException ex){
+            System.out.println(ex);
+            return new ServerResult(false);
+        }
+    }
 
     public void Listen() {
         try(ZMQ.Socket socket = this.zContext.createSocket(ZMQ.REP))  {
@@ -138,6 +149,9 @@ public class FaceServer implements IFaceServer{
                         break;
                     case GetEmbeddings:
                         response = this.getEmbeddings(message);
+                        break;
+                    case DeleteUser:
+                        response = this.deleteUser(message);
                         break;
                     default:
                         System.out.println("Message not implemented...");

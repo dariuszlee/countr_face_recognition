@@ -20,6 +20,7 @@ public class FaceDatabase {
                 + ");";
     private static String selectAll = "SELECT * from faces WHERE groupId=?;";
     private static String insertSql = "INSERT INTO faces(id, embedding, groupId) VALUES(?, ?, ?)";
+    private static String deleteSql = "DELETE FROM faces WHERE id=? AND groupId=?;";
 
     private Connection conn;
     
@@ -56,6 +57,13 @@ public class FaceDatabase {
         }
         catch(Exception e){
         }
+    }
+
+    public void delete(String userId, int groupId) throws SQLException{
+        PreparedStatement pstmt = conn.prepareStatement(deleteSql);
+        pstmt.setString(1, userId);
+        pstmt.setInt(2, groupId);
+        pstmt.executeUpdate();
     }
 
     public void Insert(String id, NDArray embedding, int groupId){
