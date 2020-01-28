@@ -11,7 +11,8 @@ public class RecognitionMessage implements Serializable {
         Recognize,
         AddPhoto,
         DeleteUser,
-        GetEmbeddings
+        GetEmbeddings,
+        Match
     }
 
     private final byte[] image;
@@ -24,6 +25,22 @@ public class RecognitionMessage implements Serializable {
     private final String userId;
     private final int groupId;
 
+    private final int maxResults;
+
+    public RecognitionMessage(final byte[] image, final MessageType type, 
+            final int height, final int width, final UUID sender, int imageType,
+            String userId, int groupId, int maxResults){
+        this.image = image;
+        this.sender = sender;
+        this.type = type;
+        this.width = width;
+        this.height = height;
+        this.imageType = imageType;
+        this.userId = userId;
+        this.groupId = groupId;
+        this.maxResults = maxResults;
+    }
+
     public RecognitionMessage(final byte[] image, final MessageType type, 
             final int height, final int width, final UUID sender, int imageType,
             String userId, int groupId){
@@ -35,6 +52,7 @@ public class RecognitionMessage implements Serializable {
         this.imageType = imageType;
         this.userId = userId;
         this.groupId = groupId;
+        this.maxResults = 0;
     }
 
     public RecognitionMessage(final byte[] image, final MessageType type, 
@@ -47,6 +65,7 @@ public class RecognitionMessage implements Serializable {
         this.imageType = imageType;
         this.userId = "";
         this.groupId = 0;
+        this.maxResults = 0;
     }
 
     public static RecognitionMessage createActivate(final UUID uuid){
@@ -71,6 +90,10 @@ public class RecognitionMessage implements Serializable {
 
     public static RecognitionMessage createAddPhoto(final byte[] b, int height, int width, int imageType, final UUID uuid, final String userId, final int groupId){
         return new RecognitionMessage(b, RecognitionMessage.MessageType.AddPhoto, height, width, uuid, imageType, userId, groupId);
+    }
+
+    public static RecognitionMessage createMatch(final byte[] b, int height, int width, int imageType, final UUID uuid, final String userId, final int groupId, final int maxResults){
+        return new RecognitionMessage(b, RecognitionMessage.MessageType.Match, height, width, uuid, imageType, userId, groupId, maxResults);
     }
 
     @Override
@@ -135,5 +158,9 @@ public class RecognitionMessage implements Serializable {
         return "RecognitionMessage [groupId=" + groupId + ", height=" + height + ", image=" + Arrays.toString(image)
                 + ", imageType=" + imageType + ", sender=" + sender + ", type=" + type + ", userId=" + userId
                 + ", width=" + width + "]";
+    }
+
+    public int getMaxResults() {
+        return maxResults;
     }
 }

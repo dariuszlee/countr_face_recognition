@@ -1,6 +1,5 @@
 package countr.common;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 public class RecognitionResult extends ServerResult {

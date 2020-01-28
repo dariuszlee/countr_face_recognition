@@ -24,6 +24,7 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import countr.utils.DebugUtils;
 import countr.common.EmbeddingResponse;
+import countr.common.MatchResult;
 import countr.common.RecognitionMessage;
 import countr.common.RecognitionMessage.MessageType;
 import countr.common.RecognitionResult;
@@ -163,6 +164,26 @@ public class FaceClient implements IFaceClient
         }
     }
 
+    public void Match(Mat mat, final int groupId, final int maxResults){
+        if (mat.channels() == 1){
+            mat = this.convertImage(mat);
+        }
+
+        byte[] dataBytes = this.matrixToBytes(mat);
+        try(final ZMQ.Socket socket = this.zeroMqContext.createSocket(SocketType.REQ)){
+            socket.connect(this.connectionString);
+
+            final RecognitionMessage message = RecognitionMessage.createMatch(dataBytes, mat.height(), mat.width(), mat.type(), this.sessionId, "", groupId, maxResults);
+
+            final byte[] messageData = SerializationUtils.serialize(message);
+            socket.send(messageData, 0);
+
+            final byte[] replyBytes = socket.recv(0);
+            MatchResult reply = SerializationUtils.deserialize(replyBytes);
+            System.out.println("Match reply: " + reply);
+        }
+    }
+
     public void AddPhoto(final BufferedImage image, String userId, int groupId){
         Mat mat = this.convertImage(image);
         DebugUtils.saveImage(mat, "before_mat");
@@ -253,12 +274,14 @@ public class FaceClient implements IFaceClient
         }
         int groupId = 1;
         String userId = "2";
+        int maxResults = 3;
 
-        String filePath = "/home/dzlyy/projects/countr_face_recognition/face_python/yalefaces/subject01.normal.jpg.png";
+        String filePath = "/home/dzly/projects/countr_face_recognition/face_python/yalefaces/subject01.normal.jpg.png";
         final Mat image = Imgcodecs.imread(filePath);
         // fc.Recognize(image);
-        // fc.AddPhoto(image, userId, groupId);
-        fc.DeleteUser(userId, groupId);
+        fc.AddPhoto(image, userId, groupId);
+        fc.Match(image, groupId, maxResults);
+        // fc.DeleteUser(userId, groupId);
         // System.out.println("Finished recognizing image 1");
         // System.out.println();
 

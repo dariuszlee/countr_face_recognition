@@ -3,7 +3,7 @@ package countr.faceclient;
 import java.util.HashMap;
 
 public class RecognitionSession {
-    HashMap<String, float> scores;
+    HashMap<String, Float> scores;
     float[] embeddings;
 
     public RecognitionSession(float[] embeddings){

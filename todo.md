@@ -22,3 +22,6 @@
 
 ## Client-Side FaceRecognition
 1. Test with the quick opencv face detect
+
+## Neural Network
+1. Experiment with 'less' deep networks

@@ -1,8 +1,9 @@
 package countr.common;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
-public class RecognitionMatch implements Comparable {
+public class RecognitionMatch implements Comparable, Serializable{
     final private String id;
     final private float match;
 
