@@ -1,6 +1,7 @@
 package countr.utils;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.lang.Math;
@@ -9,6 +10,17 @@ import countr.common.FaceEmbedding;
 import countr.common.RecognitionMatch;
 
 public class ComputeUtils {
+
+    // public class UniquePriorityQueue {
+    //     public UniquePriorityQueue(int numberOfResults){
+    //         super(numberOfResults);
+    //     }
+
+    //     public void add(RecognitionMatch match){
+    //         if()
+    //     }
+    // }
+
     public static float EucDistance(float[] feature){
         float dot = getDotProduct(feature, feature);
         return (float) Math.sqrt(dot); 
@@ -24,17 +36,25 @@ public class ComputeUtils {
     }
 
     public static RecognitionMatch[] Match(float[] toMatch, FaceEmbedding[] database, int numberOfResults){
-        PriorityQueue<RecognitionMatch> maxHeap = new PriorityQueue<RecognitionMatch>(numberOfResults);
+        // Step 1: Get All Distances
+        PriorityQueue<RecognitionMatch> maxHeap = new PriorityQueue<RecognitionMatch>();
         for(FaceEmbedding embedding : database){
             float dotResult = getDotProduct(toMatch, embedding.getEmbedding());
             maxHeap.add(new RecognitionMatch(embedding.getId(), dotResult));
         }
 
-        RecognitionMatch[] results = new RecognitionMatch[numberOfResults];
-        for(int i = 0; i < numberOfResults; ++i){
-            results[i] = maxHeap.poll();
+        // Step 2: Keep Only Unique Ids and Preserve Id
+        PriorityQueue<RecognitionMatch> result = new PriorityQueue<RecognitionMatch>(numberOfResults);
+        HashSet<RecognitionMatch> uniqueIds = new HashSet<RecognitionMatch>();
+        int count = 0;
+        for(RecognitionMatch match : maxHeap){
+            if(uniqueIds.add(match) && result.add(match) && 
+                    ++count == numberOfResults){
+                break;
+            }
         }
-        return results;
+
+        return result.toArray(new RecognitionMatch[]{});
     }    
 
     public static float getDotProduct(float[] left, float[] right){
@@ -48,6 +68,7 @@ public class ComputeUtils {
     public static void main(String[] args) {
         FaceEmbedding[] db = new FaceEmbedding[]{
             new FaceEmbedding("1", new float[]{1}, 1),
+            new FaceEmbedding("3", new float[]{7}, 1),
             new FaceEmbedding("2", new float[]{2}, 1),
             new FaceEmbedding("3", new float[]{3}, 1),
         };

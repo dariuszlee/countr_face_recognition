@@ -8,6 +8,9 @@
 1. Add debugability to database - (ie. store image with embedding)
 2. Test different camera sources (ie. get lowest possible deployable quality)
 
+## Dev-Ops
+1. Ensure Opencv version configurability
+
 ## Automated Testing
 1. Unit Tests...
 2. Build Tests. Automated docker for example on various platforms
