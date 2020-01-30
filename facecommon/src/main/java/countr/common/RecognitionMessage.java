@@ -11,6 +11,7 @@ public class RecognitionMessage implements Serializable {
         Recognize,
         AddPhoto,
         DeleteUser,
+        DeleteGroup,
         GetEmbeddings,
         Match
     }
@@ -74,6 +75,10 @@ public class RecognitionMessage implements Serializable {
 
     public static RecognitionMessage createDeleteUser(final UUID uuid, String userId, int groupId){
         return new RecognitionMessage(null, MessageType.DeleteUser, 0, 0, uuid, 0, userId, groupId);
+    }
+
+    public static RecognitionMessage createDeleteGroup(final UUID uuid, int groupId){
+        return new RecognitionMessage(null, MessageType.DeleteGroup, 0, 0, uuid, 0, "", groupId);
     }
 
     public static RecognitionMessage createDeactivate(final UUID uuid){

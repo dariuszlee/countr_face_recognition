@@ -1,12 +1,11 @@
 __pycache__
 resnet100.onnx
 found_images*
-faceclient/target/
 
 .classpath
 .project
 .settings/
-model-r100-ii
 target/
-debug/
 face.db
+
+model-r100-ii/

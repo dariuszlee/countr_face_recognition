@@ -12,6 +12,11 @@ public class EmbeddingResponse extends ServerResult {
         this.embeddings = embeddings;
     }
 
+    public EmbeddingResponse(List<FaceEmbedding> embeddings, boolean result, String message) {
+        super(result, message);
+        this.embeddings = embeddings;
+    }
+
     public List<FaceEmbedding> getEmbeddings() {
         return embeddings;
     }

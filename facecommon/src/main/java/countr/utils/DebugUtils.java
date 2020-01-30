@@ -13,7 +13,10 @@ import org.opencv.imgcodecs.Imgcodecs;
 
 public class DebugUtils {
     public static void saveImage(BufferedImage bufferedImage){
-        String outLocation = "debug/debug_img_"+ new SimpleDateFormat("yyyymmdd-hh.mm.ss").format(new Date(System.currentTimeMillis())) + ".jpg";
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        String directoryPath = classloader.getResource("debug/").getPath();
+
+        String outLocation = directoryPath + "/debug_img_"+ new SimpleDateFormat("yyyymmdd-hh.mm.ss").format(new Date(System.currentTimeMillis())) + ".jpg";
         File outFile = new File(outLocation);
         try{
             ImageIO.write(bufferedImage, "jpg", outFile);
@@ -24,18 +27,27 @@ public class DebugUtils {
     }
 
     public static void saveImage(BufferedImage bufferedImage, String fileName){
-        String outLocation = "debug/" + fileName + ".jpg";
-        File outFile = new File(outLocation);
         try{
+            ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+            String directoryPath = classloader.getResource("debug/").getPath();
+
+            String outLocation = directoryPath + fileName + ".jpg";
+            File outFile = new File(outLocation);
             ImageIO.write(bufferedImage, "jpg", outFile);
         }
         catch (IOException ex){
-            System.out.println("Debugging image failed...");
+            System.out.println("Debugging image failed. Unable to open file.");
+        }
+        catch (Exception ex){
+            System.out.println("Failed to save image.");
+            System.out.println(ex);
         }
     }
 
     public static void saveImage(Mat image, String fileName){
-        String outLocation = "debug/" + fileName + ".png";
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        String directoryPath = classloader.getResource("debug/").getPath();
+        String outLocation = directoryPath + fileName + ".png";
         boolean res = Imgcodecs.imwrite(outLocation, image);
         if(!res){
             System.out.println("Debugging image failed...");
@@ -56,6 +68,6 @@ public class DebugUtils {
         System.out.println("type "+ imageType);
         System.out.println("depth "+ depth);
         System.out.println("channels "+ mat.channels());
+        System.out.println("Is empty " + mat.empty());
     }
-
 }

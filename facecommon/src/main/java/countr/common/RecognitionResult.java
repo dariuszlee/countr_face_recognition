@@ -10,6 +10,11 @@ public class RecognitionResult extends ServerResult {
         this.result = result;
     }
 
+    public RecognitionResult(float[] result, boolean success, String message) {
+        super(success, message);
+        this.result = result;
+    }
+
     public float[] getResult() {
         return result;
     }

@@ -1,12 +1,14 @@
-# January 27 2020
+# Week January 27 2020
 
 ## Critical
-1. Path fixing
+1. Path fixing [Y]
 2. Deploy on RaspberryPi
+3. Error Handling - Better reporting to client
 
 ## Good To Have
 1. Add debugability to database - (ie. store image with embedding)
 2. Test different camera sources (ie. get lowest possible deployable quality)
+3. Send smallest image format... then convert to three channels if necessary
 
 ## Dev-Ops
 1. Ensure Opencv version configurability

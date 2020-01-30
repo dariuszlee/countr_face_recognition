@@ -49,12 +49,12 @@ public class FaceDetection {
         }
 
         if(this.isDebug){
-            // 3. Augment the input image with the detected faces
             BufferedImage annotatedImage = MtcnnUtil.drawFaceAnnotations(inputImage, faceAnnotations);
-            // 4. Store face-annotated image
-            ImageIO.write(annotatedImage, "png", new File("./AnnotatedImage.png"));
-            
-            // 5. Print the face annotations as JSON
+
+            ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+            String directoryPath = classloader.getResource("debug/").getPath();
+            String imageDebugPath = directoryPath + "./AnnotatedImage.png";
+            ImageIO.write(annotatedImage, "png", new File(imageDebugPath));
             System.out.println("Face Annotations (JSON): " + jsonMapper.writeValueAsString(faceAnnotations));
         }
 

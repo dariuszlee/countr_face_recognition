@@ -43,7 +43,10 @@ public class FaceServer implements IFaceServer{
     ZContext zContext;
     FaceDatabase faceDb; 
 
-    public FaceServer(final boolean isGpu, final String modelPath, final int port, final boolean isDebug) {
+    public FaceServer(final boolean isGpu, final String modelDir, final int port, final boolean isDebug) {
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        String modelPath = classloader.getResource(modelDir).getPath() + "model";
+
         this.resnet100 = new MXNetUtils(isGpu, modelPath);
         this.faceDetector = new FaceDetection(isDebug);
         this.port = port;
@@ -56,10 +59,56 @@ public class FaceServer implements IFaceServer{
         }
     }
 
-    public void Start(){
-    };
+    public void Listen() {
+        try(ZMQ.Socket socket = this.zContext.createSocket(ZMQ.REP))  {
+            // Socket to talk to clients
+            socket.bind("tcp://*:" + this.port);
 
-    public float[] imageToFeatures(final RecognitionMessage message ){
+            while (!Thread.currentThread().isInterrupted()) {
+                // Block until a message is received
+                final byte[] reply = socket.recv(0);
+                final RecognitionMessage message = SerializationUtils.deserialize(reply);
+
+                final MessageType type = message.getType();
+                System.out.println("Received message from " + message.getSender() + " of type: " + type);
+
+                ServerResult response = null;
+                switch (type){
+                    case Activate:
+                        break;
+                    case Deactivate:
+                        break;
+                    case Recognize:
+                        response = this.Recognize(message);
+                        break;
+                    case AddPhoto:
+                        response = this.AddPhoto(message);
+                        break;
+                    case GetEmbeddings:
+                        response = this.getEmbeddings(message);
+                        break;
+                    case DeleteGroup:
+                        response = this.deleteGroup(message);
+                        break;
+                    case DeleteUser:
+                        response = this.deleteUser(message);
+                        break;
+                    case Match:
+                        response = this.getMatches(message);
+                        break;
+                    default:
+                        System.out.println("Message not implemented...");
+                }
+
+                // Send a response
+                final byte [] responseBytes = SerializationUtils.serialize(response);
+                socket.send(responseBytes, 0);
+            }
+        }
+    }
+
+
+    private float[] imageToFeatures(final RecognitionMessage message ){
         final byte[] data = message.getImage();
         final int width = message.getWidth();
         final int height = message.getHeight();
@@ -67,16 +116,12 @@ public class FaceServer implements IFaceServer{
 
         final Mat mat = new Mat(height, width, imageType);
         mat.put(0,0, data);
-        DebugUtils.printMatrixInfo(mat);
-        DebugUtils.saveImage(mat, "received");
         final MatOfByte mob = new MatOfByte();
         Imgcodecs.imencode(".png", mat, mob);
 
         float[] recognitionResult = null;
         try {
             final BufferedImage inputImage = ImageIO.read(new ByteArrayInputStream(mob.toArray()));
-            final File newFile = new File("test_output.png");
-            ImageIO.write(inputImage, "png", newFile);
             final BufferedImage faceImage = this.faceDetector.detect(inputImage);
             if(faceImage != null){
                 recognitionResult = ComputeUtils.Normalize(this.resnet100.predict(faceImage)); 
@@ -125,6 +170,17 @@ public class FaceServer implements IFaceServer{
         }
     }
 
+    public ServerResult deleteGroup(final RecognitionMessage message){
+        try {
+            this.faceDb.deleteGroup(message.getGroupId());
+            return new ServerResult(true);
+        }
+        catch (final SQLException ex){
+            System.out.println(ex);
+            return new ServerResult(false);
+        }
+    }
+
     public MatchResult getMatches(final RecognitionMessage message){
         int maxResults = message.getMaxResults();
         if (maxResults == 0)
@@ -133,59 +189,20 @@ public class FaceServer implements IFaceServer{
         List<FaceEmbedding> embeddings = null;
         try{
             embeddings = this.faceDb.get(message.getGroupId());
-        }
-        catch (final SQLException ex){
-            return new MatchResult(null, false);
-        }
-        // TODO: Should be retreived from message
-        final float[] feature = this.imageToFeatures(message);
-        RecognitionMatch[] results = ComputeUtils.Match(feature, embeddings.toArray(new FaceEmbedding[]{}), maxResults);
-        return new MatchResult(results, true);
-    }
-
-    public void Listen() {
-        try(ZMQ.Socket socket = this.zContext.createSocket(ZMQ.REP))  {
-            // Socket to talk to clients
-            socket.bind("tcp://*:" + this.port);
-
-            while (!Thread.currentThread().isInterrupted()) {
-                // Block until a message is received
-                final byte[] reply = socket.recv(0);
-                final RecognitionMessage message = SerializationUtils.deserialize(reply);
-
-                final MessageType type = message.getType();
-                System.out.println("Type: " + type);
-
-                ServerResult response = null;
-                switch (type){
-                    case Activate:
-                        break;
-                    case Deactivate:
-                        break;
-                    case Recognize:
-                        response = this.Recognize(message);
-                        break;
-                    case AddPhoto:
-                        response = this.AddPhoto(message);
-                        break;
-                    case GetEmbeddings:
-                        response = this.getEmbeddings(message);
-                        break;
-                    case DeleteUser:
-                        response = this.deleteUser(message);
-                        break;
-                    case Match:
-                        response = this.getMatches(message);
-                        break;
-                    default:
-                        System.out.println("Message not implemented...");
-                }
-
-                // Send a response
-                final byte [] responseBytes = SerializationUtils.serialize(response);
-                socket.send(responseBytes, 0);
+            final float[] feature = this.imageToFeatures(message);
+            if(feature != null){
+                RecognitionMatch[] results = ComputeUtils.Match(feature, embeddings.toArray(new FaceEmbedding[]{}), maxResults);
+                return new MatchResult(results, true);
             }
         }
+        catch (final SQLException ex){
+            System.out.println("Failed getting embeddings...");
+            System.out.println(ex);
+            return new MatchResult(null, false);
+        }
+
+        System.out.println("Failed matching message: " + message.getSender());
+        return new MatchResult(null, false);
     }
 
     public static void main(final String[] args) {

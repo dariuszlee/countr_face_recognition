@@ -74,7 +74,6 @@ public class MXNetUtils {
     }
 
     public static void main(String[] args) {
-        // String modelPath = "/home/dzly/projects/countr_face_recognition/faceclient/model-r100-ii/model";
         String modelPath = "/home/dzlyy/projects/countr_face_recognition/faceclient/model-r100-ii/model";
         boolean isGpu = false;
 
