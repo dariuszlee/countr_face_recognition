@@ -80,7 +80,7 @@
         <version>0.5.2-SNAPSHOT</version>
     </dependency>
     <dependency>
-        <groupId>net.tzolov.cv</groupId>
+        <groupId>org.countr</groupId>
         <artifactId>mtcnn</artifactId>
         <version>0.0.4</version>
     </dependency>
