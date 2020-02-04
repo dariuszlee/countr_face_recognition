@@ -1,0 +1,3 @@
+[submodule "mtcnn-java"]
+	path = mtcnn-java
+	url = https://github.com/dariuszlee/mtcnn-java
