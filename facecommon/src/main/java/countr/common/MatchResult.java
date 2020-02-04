@@ -3,7 +3,7 @@ package countr.common;
 import java.util.Arrays;
 
 public class MatchResult extends ServerResult {
-    RecognitionMatch[] matches;
+    private final RecognitionMatch[] matches;
 
     public MatchResult(RecognitionMatch[] matches, boolean success){
         super(success);

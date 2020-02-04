@@ -19,6 +19,7 @@ public class FaceDatabase {
                 + "    groupId int NOT NULL\n"
                 + ");";
     private static String selectAll = "SELECT * from faces WHERE groupId=?;";
+    private static String selectAllUserId = "SELECT * from faces WHERE userId=? AND groupId=?;";
     private static String insertSql = "INSERT INTO faces(id, embedding, groupId) VALUES(?, ?, ?)";
     private static String deleteSql = "DELETE FROM faces WHERE id=? AND groupId=?;";
     private static String deleteGroupSql = "DELETE FROM faces WHERE groupId=?;";
@@ -35,6 +36,23 @@ public class FaceDatabase {
     public List<FaceEmbedding> get(int groupId) throws SQLException {
         ArrayList<FaceEmbedding> results = new ArrayList<FaceEmbedding>();
         try(PreparedStatement pstmt = conn.prepareStatement(selectAll);){
+            pstmt.setInt(1, groupId);
+            ResultSet rs = pstmt.executeQuery();
+            while(rs.next()){
+                FaceEmbedding fEmbedding = new FaceEmbedding(rs.getString("id"),
+                        this.generateEmbedding(rs.getString("embedding")),
+                        rs.getInt("groupId"));
+                results.add(fEmbedding); 
+            }
+        }
+
+        return results;
+    }
+
+    public List<FaceEmbedding> get(String userId, int groupId) throws SQLException {
+        ArrayList<FaceEmbedding> results = new ArrayList<FaceEmbedding>();
+        try(PreparedStatement pstmt = conn.prepareStatement(selectAllUserId);){
+            pstmt.setString(1, userId);
             pstmt.setInt(1, groupId);
             ResultSet rs = pstmt.executeQuery();
             while(rs.next()){

@@ -31,6 +31,7 @@ import countr.common.RecognitionMessage;
 import countr.common.RecognitionMessage.MessageType;
 import countr.common.RecognitionResult;
 import countr.common.ServerResult;
+import countr.common.VerifyResult;
 
 public class FaceClient implements IFaceClient
 {
@@ -50,6 +51,9 @@ public class FaceClient implements IFaceClient
     private final ZContext zeroMqContext;
     private final UUID sessionId;
 
+    private final float matchThreshold;
+    private final float verifyThreshold;
+
     public FaceClient() throws ConfigurationException{
         final Configurations configs = new Configurations();
         final Configuration config = configs.properties(new File("client.properties"));
@@ -59,6 +63,12 @@ public class FaceClient implements IFaceClient
 
         this.zeroMqContext = new ZContext();
         this.sessionId = this.attemptConnect();
+
+        this.matchThreshold = config.getFloat("client.matchThreshold");
+        this.verifyThreshold = config.getFloat("client.verifyThreshold");
+        if (this.matchThreshold > 1 || this.matchThreshold < 0 || this.verifyThreshold > 1 || this.verifyThreshold < 0){
+            throw new ConfigurationException("Match and Verify thresholds must be less than 1 and greater than 0.");
+        }
     }
 
     @Override
@@ -106,7 +116,6 @@ public class FaceClient implements IFaceClient
             System.out.println(replyMessage);
             return replyMessage;
         }
-
     }
 
     @Override
@@ -168,6 +177,52 @@ public class FaceClient implements IFaceClient
             final byte[] replyBytes = socket.recv(0);
             RecognitionResult reply = SerializationUtils.deserialize(replyBytes);
             System.out.println("AddPhoto reply: " + reply);
+            return reply;
+        }
+    }
+
+    public boolean ContainsFace(Mat mat){
+        throw new java.lang.UnsupportedOperationException();
+    }
+
+    public boolean ContainsFace(String mat){
+        throw new java.lang.UnsupportedOperationException();
+    }
+
+    public VerifyResult Verify(String path, final String userId,  final int groupId){
+        Mat image = null;
+        try {
+            image = Imgcodecs.imread(path);
+        }
+        catch (Exception ex){
+            System.out.println("Loading image file failed... Check path.");
+            System.out.println(ex);
+        }
+        return this.Verify(image, userId, groupId);
+    }
+
+    public VerifyResult Verify(Mat mat, final String userId, final int groupId){
+        if (mat.empty()){
+            return new VerifyResult(null, false, "No data in image. Check input.");
+        }
+        else if (mat.width() * mat.height() * mat.channels() > this.maxImageSize){
+            return new VerifyResult(null, false, "Image exeeds max image size. Increase the default threshold or convert your image. This is set client.properties or in the FaceClient constructor. Currently the value is: " + this.maxImageSize);
+        }
+        else if(mat.channels() == 1){
+            mat = this.convertImage(mat);
+        }
+
+        byte[] dataBytes = this.matrixToBytes(mat);
+        try(final ZMQ.Socket socket = this.zeroMqContext.createSocket(SocketType.REQ)){
+            socket.connect(this.connectionString);
+
+            final RecognitionMessage message = RecognitionMessage.createVerify(dataBytes, mat.height(), mat.width(), mat.type(), this.sessionId, userId, groupId, 1);
+
+            final byte[] messageData = SerializationUtils.serialize(message);
+            socket.send(messageData, 0);
+
+            final byte[] replyBytes = socket.recv(0);
+            VerifyResult reply = SerializationUtils.deserialize(replyBytes);
             return reply;
         }
     }

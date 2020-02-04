@@ -13,6 +13,7 @@ public class RecognitionMessage implements Serializable {
         DeleteUser,
         DeleteGroup,
         GetEmbeddings,
+        Verify,
         Match
     }
 
@@ -99,6 +100,10 @@ public class RecognitionMessage implements Serializable {
 
     public static RecognitionMessage createMatch(final byte[] b, int height, int width, int imageType, final UUID uuid, final String userId, final int groupId, final int maxResults){
         return new RecognitionMessage(b, RecognitionMessage.MessageType.Match, height, width, uuid, imageType, userId, groupId, maxResults);
+    }
+
+    public static RecognitionMessage createVerify(final byte[] b, int height, int width, int imageType, final UUID uuid, final String userId, final int groupId, final int maxResults){
+        return new RecognitionMessage(b, RecognitionMessage.MessageType.Verify, height, width, uuid, imageType, userId, groupId, maxResults);
     }
 
     @Override

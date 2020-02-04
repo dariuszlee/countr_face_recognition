@@ -32,6 +32,7 @@ import countr.common.RecognitionMessage;
 import countr.common.RecognitionMessage.MessageType;
 import countr.common.RecognitionResult;
 import countr.common.ServerResult;
+import countr.common.VerifyResult;
 import countr.utils.ComputeUtils;
 import countr.utils.DebugUtils;
 
@@ -96,6 +97,9 @@ public class FaceServer implements IFaceServer{
                     case Match:
                         response = this.getMatches(message);
                         break;
+                    case Verify:
+                        response = this.verify(message);
+                        break;
                     default:
                         System.out.println("Message not implemented...");
                 }
@@ -107,6 +111,26 @@ public class FaceServer implements IFaceServer{
         }
     }
 
+
+    private VerifyResult verify(final RecognitionMessage message){
+        List<FaceEmbedding> embeddings = null;
+        try{
+            embeddings = this.faceDb.get(message.getUserId(), message.getGroupId());
+            final float[] feature = this.imageToFeatures(message);
+            if(feature != null){
+                RecognitionMatch[] results = ComputeUtils.Match(feature, embeddings.toArray(new FaceEmbedding[]{}), 1);
+                return new VerifyResult(results[0], true);
+            }
+        }
+        catch (final SQLException ex){
+            System.out.println("Failed getting embeddings...");
+            System.out.println(ex);
+            return new VerifyResult(null, false, "Face database error.");
+        }
+
+        System.out.println("Failed verifying message: " + message.getSender());
+        return new VerifyResult(null, false, "Unknown error: Verify Failed");
+    }
 
     private float[] imageToFeatures(final RecognitionMessage message ){
         final byte[] data = message.getImage();
@@ -184,7 +208,7 @@ public class FaceServer implements IFaceServer{
     public MatchResult getMatches(final RecognitionMessage message){
         int maxResults = message.getMaxResults();
         if (maxResults == 0)
-            return new MatchResult(new RecognitionMatch[]{}, true);
+            return new MatchResult(new RecognitionMatch[]{}, false, "max_result must be greater than 0.");
 
         List<FaceEmbedding> embeddings = null;
         try{

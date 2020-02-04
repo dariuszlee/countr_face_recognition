@@ -7,17 +7,22 @@ import countr.common.FaceEmbedding;
 import countr.common.MatchResult;
 import countr.common.RecognitionResult;
 import countr.common.ServerResult;
-
-import java.awt.image.BufferedImage;
+import countr.common.VerifyResult;
 
 public interface IFaceClient {
     public Mat ReadCamera(int deviceId);
+
+    public boolean ContainsFace(Mat mat);
+    public boolean ContainsFace(String mat);
 
     public RecognitionResult AddPhoto(String path, String userId, int groupId);
     public RecognitionResult AddPhoto(Mat mat, String userId, int groupId);
 
     public MatchResult Match(String path, final int groupId, final int maxResults);
     public MatchResult Match(Mat image, final int groupId, final int maxResults);
+
+    public VerifyResult Verify(String path, final String userId, final int groupId);
+    public VerifyResult Verify(Mat image, final String userId, final int groupId);
 
     public RecognitionResult Recognize(String imagePath, int groupId);
     public RecognitionResult Recognize(Mat image, int groupId);

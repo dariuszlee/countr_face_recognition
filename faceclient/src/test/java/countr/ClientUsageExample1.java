@@ -44,15 +44,6 @@ public class ClientUsageExample1 {
         }
     }
 
-    public void Test_ShowRecognition() {
-    }
-
-    public void Test_ShowVerify() {
-    }
-
-    public void Test_ShowNoVerify() {
-    }
-
     public static HashMap<String, List<String>> idPaths(){
         HashMap<String, List<String>> result = new HashMap<String, List<String>>();
 
