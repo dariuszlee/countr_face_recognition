@@ -23,5 +23,9 @@ public class ServerResult implements Serializable {
     @Override
     public String toString() {
         return "ServerResult [message=" + message + ", success=" + success + "]";
+    }
+
+    public String getMessage() {
+        return message;
     }    
 }

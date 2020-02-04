@@ -19,4 +19,8 @@ public class MatchResult extends ServerResult {
     public String toString() {
         return super.toString() + "MatchResult [matches=" + Arrays.toString(matches) + "]";
     }
+
+    public RecognitionMatch[] getMatches() {
+        return matches;
+    }
 }

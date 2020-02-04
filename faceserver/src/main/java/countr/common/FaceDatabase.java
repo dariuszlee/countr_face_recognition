@@ -19,7 +19,7 @@ public class FaceDatabase {
                 + "    groupId int NOT NULL\n"
                 + ");";
     private static String selectAll = "SELECT * from faces WHERE groupId=?;";
-    private static String selectAllUserId = "SELECT * from faces WHERE userId=? AND groupId=?;";
+    private static String selectAllUserId = "SELECT * from faces WHERE id=? AND groupId=?;";
     private static String insertSql = "INSERT INTO faces(id, embedding, groupId) VALUES(?, ?, ?)";
     private static String deleteSql = "DELETE FROM faces WHERE id=? AND groupId=?;";
     private static String deleteGroupSql = "DELETE FROM faces WHERE groupId=?;";
@@ -53,7 +53,7 @@ public class FaceDatabase {
         ArrayList<FaceEmbedding> results = new ArrayList<FaceEmbedding>();
         try(PreparedStatement pstmt = conn.prepareStatement(selectAllUserId);){
             pstmt.setString(1, userId);
-            pstmt.setInt(1, groupId);
+            pstmt.setInt(2, groupId);
             ResultSet rs = pstmt.executeQuery();
             while(rs.next()){
                 FaceEmbedding fEmbedding = new FaceEmbedding(rs.getString("id"),

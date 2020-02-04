@@ -1,9 +1,7 @@
 package countr.common;
 
-import java.util.Arrays;
-
 public class VerifyResult extends ServerResult {
-    RecognitionMatch topMatch;
+    private final RecognitionMatch topMatch;
 
     public VerifyResult(RecognitionMatch topMatch, boolean success){
         super(success);
@@ -18,5 +16,9 @@ public class VerifyResult extends ServerResult {
     @Override
     public String toString() {
         return super.toString() + "VerifyResult [topMatch=" + topMatch + "]";
+    }
+
+    public RecognitionMatch getTopMatch() {
+        return topMatch;
     }
 }

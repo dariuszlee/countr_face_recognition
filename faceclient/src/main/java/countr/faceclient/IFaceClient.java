@@ -23,6 +23,8 @@ public interface IFaceClient {
 
     public VerifyResult Verify(String path, final String userId, final int groupId);
     public VerifyResult Verify(Mat image, final String userId, final int groupId);
+    public VerifyResult Verify(String path, final String userId, final int groupId, final float threshold);
+    public VerifyResult Verify(Mat image, final String userId, final int groupId, final float threshold);
 
     public RecognitionResult Recognize(String imagePath, int groupId);
     public RecognitionResult Recognize(Mat image, int groupId);

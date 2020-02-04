@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import countr.common.EmbeddingResponse;
 import countr.common.MatchResult;
+import countr.common.RecognitionResult;
 import countr.faceclient.FaceClient;
 import countr.faceclient.IFaceClient;
 
@@ -109,7 +110,13 @@ public class ClientUsageExample1 {
             for(String id : paths.keySet()){
                 for(String path : paths.get(id)){
                     System.out.println("Adding to id: " + id + " path: " + path);
-                    fc.AddPhoto(path, id, groupId);        
+                    RecognitionResult rs = fc.AddPhoto(path, id, groupId);        
+                    if (rs.isSuccess()){
+                        System.out.println("Success!");
+                    }
+                    else{
+                        System.out.println("Failed!");
+                    }
                 }
             }
         }

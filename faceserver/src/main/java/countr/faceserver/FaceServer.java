@@ -116,6 +116,10 @@ public class FaceServer implements IFaceServer{
         List<FaceEmbedding> embeddings = null;
         try{
             embeddings = this.faceDb.get(message.getUserId(), message.getGroupId());
+            if(embeddings.isEmpty()){
+                return new VerifyResult(null, false, "No embeddings found for UserId and group combination.");
+            }
+
             final float[] feature = this.imageToFeatures(message);
             if(feature != null){
                 RecognitionMatch[] results = ComputeUtils.Match(feature, embeddings.toArray(new FaceEmbedding[]{}), 1);
@@ -127,12 +131,23 @@ public class FaceServer implements IFaceServer{
             System.out.println(ex);
             return new VerifyResult(null, false, "Face database error.");
         }
+        catch (ArrayIndexOutOfBoundsException ex){
+            System.out.println("There are no match results.");
+            System.out.println("Embeddings: " + embeddings);
+            // System.out.println("Feature: " + feature);
+            System.out.println(ex);
+            return new VerifyResult(null, false, "No recognition results.");
+        }
+        catch (Exception ex){
+            System.out.println(ex);
+            return new VerifyResult(null, false, "Unknown Server Exception: " + ex.toString());
+        }
 
         System.out.println("Failed verifying message: " + message.getSender());
         return new VerifyResult(null, false, "Unknown error: Verify Failed");
     }
 
-    private float[] imageToFeatures(final RecognitionMessage message ){
+    private float[] imageToFeatures(final RecognitionMessage message){
         final byte[] data = message.getImage();
         final int width = message.getWidth();
         final int height = message.getHeight();
@@ -208,11 +223,17 @@ public class FaceServer implements IFaceServer{
     public MatchResult getMatches(final RecognitionMessage message){
         int maxResults = message.getMaxResults();
         if (maxResults == 0)
+        {
             return new MatchResult(new RecognitionMatch[]{}, false, "max_result must be greater than 0.");
+        }
 
         List<FaceEmbedding> embeddings = null;
         try{
             embeddings = this.faceDb.get(message.getGroupId());
+            if(embeddings.isEmpty()){
+                return new MatchResult(null, false, "No embeddings for given group id.");
+            }
+
             final float[] feature = this.imageToFeatures(message);
             if(feature != null){
                 RecognitionMatch[] results = ComputeUtils.Match(feature, embeddings.toArray(new FaceEmbedding[]{}), maxResults);

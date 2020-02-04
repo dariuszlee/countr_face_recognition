@@ -176,7 +176,6 @@ public class FaceClient implements IFaceClient
 
             final byte[] replyBytes = socket.recv(0);
             RecognitionResult reply = SerializationUtils.deserialize(replyBytes);
-            System.out.println("AddPhoto reply: " + reply);
             return reply;
         }
     }
@@ -189,19 +188,7 @@ public class FaceClient implements IFaceClient
         throw new java.lang.UnsupportedOperationException();
     }
 
-    public VerifyResult Verify(String path, final String userId,  final int groupId){
-        Mat image = null;
-        try {
-            image = Imgcodecs.imread(path);
-        }
-        catch (Exception ex){
-            System.out.println("Loading image file failed... Check path.");
-            System.out.println(ex);
-        }
-        return this.Verify(image, userId, groupId);
-    }
-
-    public VerifyResult Verify(Mat mat, final String userId, final int groupId){
+    public VerifyResult Verify(Mat mat, final String userId,  final int groupId, final float threshold){
         if (mat.empty()){
             return new VerifyResult(null, false, "No data in image. Check input.");
         }
@@ -223,8 +210,33 @@ public class FaceClient implements IFaceClient
 
             final byte[] replyBytes = socket.recv(0);
             VerifyResult reply = SerializationUtils.deserialize(replyBytes);
+
+            // Import step
+            if (reply.isSuccess() && reply.getTopMatch().getMatch() < threshold){
+                return new VerifyResult(reply.getTopMatch(), false, "Verify Threshold not reached.");
+            }
             return reply;
         }
+    }
+
+    public VerifyResult Verify(String path, final String userId, final int groupId, final float threshold){
+        Mat image = null;
+        try {
+            image = Imgcodecs.imread(path);
+        }
+        catch (Exception ex){
+            System.out.println("Loading image file failed... Check path.");
+            System.out.println(ex);
+        }
+        return this.Verify(image, userId, groupId, threshold);
+    }
+
+    public VerifyResult Verify(String path, final String userId,  final int groupId){
+        return this.Verify(path, userId, groupId, this.verifyThreshold);
+    }
+
+    public VerifyResult Verify(Mat mat, final String userId, final int groupId){
+        return this.Verify(mat, userId, groupId, this.verifyThreshold);
     }
 
     public MatchResult Match(String path, final int groupId, final int maxResults){
