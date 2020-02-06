@@ -50,7 +50,6 @@ public class FaceDetection {
 
         if(this.isDebug){
             BufferedImage annotatedImage = MtcnnUtil.drawFaceAnnotations(inputImage, faceAnnotations);
-
             ClassLoader classloader = Thread.currentThread().getContextClassLoader();
             String directoryPath = classloader.getResource("debug/").getPath();
             String imageDebugPath = directoryPath + "./AnnotatedImage.png";
