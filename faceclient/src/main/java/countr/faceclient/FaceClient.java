@@ -19,6 +19,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.videoio.VideoCapture;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
@@ -54,6 +55,8 @@ public class FaceClient implements IFaceClient
     private final float matchThreshold;
     private final float verifyThreshold;
 
+    private final CascadeClassifier faceDetector;
+
     public FaceClient() throws ConfigurationException{
         final Configurations configs = new Configurations();
         final Configuration config = configs.properties(new File("client.properties"));
@@ -63,6 +66,8 @@ public class FaceClient implements IFaceClient
 
         this.zeroMqContext = new ZContext();
         this.sessionId = this.attemptConnect();
+
+        this.faceDetector = new CascadeClassifier("face_cascade");
 
         this.matchThreshold = config.getFloat("client.matchThreshold");
         this.verifyThreshold = config.getFloat("client.verifyThreshold");
@@ -180,12 +185,22 @@ public class FaceClient implements IFaceClient
         }
     }
 
+    @Override
     public boolean ContainsFace(Mat mat){
         throw new java.lang.UnsupportedOperationException();
     }
 
-    public boolean ContainsFace(String mat){
-        throw new java.lang.UnsupportedOperationException();
+    @Override
+    public boolean ContainsFace(String path){
+        Mat image = null;
+        try {
+            image = Imgcodecs.imread(path);
+        }
+        catch (Exception ex){
+            System.out.println("Loading image file failed... Check path.");
+            System.out.println(ex);
+        }
+        return this.ContainsFace(mat);
     }
 
     public VerifyResult Verify(Mat mat, final String userId,  final int groupId, final float threshold){
