@@ -14,7 +14,7 @@
         <module>facecommon</module>
         <module>faceclient</module>
         <module>faceserver</module>
-        <!-- <module>mtcnn-java</module> -->
+        <module>mtcnn-java</module>
     </modules>
 
     <build>

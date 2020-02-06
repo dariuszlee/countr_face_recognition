@@ -44,9 +44,14 @@ public class FaceServer implements IFaceServer{
     ZContext zContext;
     FaceDatabase faceDb; 
 
-    public FaceServer(final boolean isGpu, final String modelDir, final int port, final boolean isDebug) {
+    public FaceServer(final boolean isGpu, final String modelDir, final int port, final boolean isDebug) throws IOException {
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        String modelPath = classloader.getResource(modelDir).getPath() + "model";
+        String modelDirString = classloader.getResource(modelDir).getPath();
+        if (modelDirString == null){
+            System.out.println("Please put your model in src/main/resources/");
+            throw new IOException("ArcFace Model is not in correct position. Please read readme.");
+        }
+        String modelPath = modelDirString +  "model";
 
         this.resnet100 = new MXNetUtils(isGpu, modelPath);
         this.faceDetector = new FaceDetection(isDebug);
@@ -273,10 +278,18 @@ public class FaceServer implements IFaceServer{
         }
 
         System.out.println("Starting server...");
+        FaceServer server = null;
+        try {
+            server = new FaceServer(isGpu, modelPath, port, isDebug);
+        }
+        catch (Exception ex){
+            System.out.println("Error loading faceserver");
+            System.out.println(ex);
+            System.exit(1);
+        }
 
-        final FaceServer server = new FaceServer(isGpu, modelPath, port, isDebug);
+        System.out.println("Face Server initialized. Listening...");
         server.Listen();
-
         System.out.println("Exiting...");
     }
 }
