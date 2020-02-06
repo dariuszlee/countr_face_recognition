@@ -2,6 +2,7 @@ package countr.faceclient;
 
 import org.opencv.core.Mat;
 
+import countr.common.DetectFaceResult;
 import countr.common.EmbeddingResponse;
 import countr.common.FaceEmbedding;
 import countr.common.MatchResult;
@@ -12,8 +13,8 @@ import countr.common.VerifyResult;
 public interface IFaceClient {
     public Mat ReadCamera(int deviceId);
 
-    public boolean ContainsFace(Mat mat);
-    public boolean ContainsFace(String mat);
+    public DetectFaceResult ContainsFace(Mat mat);
+    public DetectFaceResult ContainsFace(String mat);
 
     public RecognitionResult AddPhoto(String path, String userId, int groupId);
     public RecognitionResult AddPhoto(Mat mat, String userId, int groupId);

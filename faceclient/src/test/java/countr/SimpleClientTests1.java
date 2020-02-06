@@ -97,4 +97,15 @@ public class SimpleClientTests1 {
         }
         return result;
     }
+
+    public static HashMap<String, List<String>> LoadYaleFacesWithDb(IFaceClient fc, int groupId){
+        HashMap<String, List<String>> yaleFiles = LoadYaleFaces();
+        System.out.println(yaleFiles);
+        for(String key: yaleFiles.keySet()){
+            for(String path: yaleFiles.get(key)){
+                fc.AddPhoto(path, key, groupId);
+            }
+        }
+        return yaleFiles;
+    }
 }

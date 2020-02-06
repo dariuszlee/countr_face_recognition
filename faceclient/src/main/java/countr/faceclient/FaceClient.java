@@ -16,6 +16,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfRect;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -25,6 +26,7 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import countr.utils.DebugUtils;
+import countr.common.DetectFaceResult;
 import countr.common.EmbeddingResponse;
 import countr.common.FaceEmbedding;
 import countr.common.MatchResult;
@@ -57,7 +59,7 @@ public class FaceClient implements IFaceClient
 
     private final CascadeClassifier faceDetector;
 
-    public FaceClient() throws ConfigurationException{
+    public FaceClient() throws ConfigurationException {
         final Configurations configs = new Configurations();
         final Configuration config = configs.properties(new File("client.properties"));
 
@@ -67,7 +69,7 @@ public class FaceClient implements IFaceClient
         this.zeroMqContext = new ZContext();
         this.sessionId = this.attemptConnect();
 
-        this.faceDetector = new CascadeClassifier("face_cascade");
+        this.faceDetector = this.getFaceDetector();
 
         this.matchThreshold = config.getFloat("client.matchThreshold");
         this.verifyThreshold = config.getFloat("client.verifyThreshold");
@@ -79,10 +81,14 @@ public class FaceClient implements IFaceClient
     @Override
     public Mat ReadCamera(int videoDevice){
         final VideoCapture vc = new VideoCapture();
-        vc.open(videoDevice);
-        final Mat matrix = new Mat();
-        final boolean res = vc.read(matrix);
-
+        Mat matrix = new Mat();
+        if(vc.open(videoDevice))
+        {
+            final boolean res = vc.read(matrix);
+            if (matrix.empty()){
+                System.out.println("Warning Empty Matrix...");
+            }
+        }
         vc.release();
         return matrix;
     }
@@ -132,6 +138,7 @@ public class FaceClient implements IFaceClient
         catch (Exception ex){
             System.out.println("Loading image file failed... Check path.");
             System.out.println(ex);
+            return new RecognitionResult(null, false, "Image is empty.");
         }
         return this.Recognize(image, groupId);
     }
@@ -160,6 +167,7 @@ public class FaceClient implements IFaceClient
         catch (Exception ex){
             System.out.println("Loading image file failed... Check path.");
             System.out.println(ex);
+            return new RecognitionResult(null, false, "Image is empty.");
         }
         return this.AddPhoto(image, userId, groupId);
     }
@@ -186,12 +194,24 @@ public class FaceClient implements IFaceClient
     }
 
     @Override
-    public boolean ContainsFace(Mat mat){
-        throw new java.lang.UnsupportedOperationException();
+    public DetectFaceResult ContainsFace(Mat mat){
+        if (mat.empty()){
+            return new DetectFaceResult(false, "No data in image. Check input.");
+        }
+
+        try {
+            MatOfRect d = new MatOfRect();;
+            this.faceDetector.detectMultiScale(mat, d);
+            return new DetectFaceResult(d.toList().size() != 0, "");
+        }
+        catch (Exception ex){
+            System.out.println("Exception occured: " + ex);
+            return new DetectFaceResult(false, "No face found.");
+        }
     }
 
     @Override
-    public boolean ContainsFace(String path){
+    public DetectFaceResult ContainsFace(String path){
         Mat image = null;
         try {
             image = Imgcodecs.imread(path);
@@ -199,8 +219,9 @@ public class FaceClient implements IFaceClient
         catch (Exception ex){
             System.out.println("Loading image file failed... Check path.");
             System.out.println(ex);
+            return new DetectFaceResult(false, "Image is empty");
         }
-        return this.ContainsFace(mat);
+        return this.ContainsFace(image);
     }
 
     public VerifyResult Verify(Mat mat, final String userId,  final int groupId, final float threshold){
@@ -242,6 +263,7 @@ public class FaceClient implements IFaceClient
         catch (Exception ex){
             System.out.println("Loading image file failed... Check path.");
             System.out.println(ex);
+            return new VerifyResult(null, false, "Image is empty.");
         }
         return this.Verify(image, userId, groupId, threshold);
     }
@@ -262,6 +284,7 @@ public class FaceClient implements IFaceClient
         catch (Exception ex){
             System.out.println("Loading image file failed... Check path.");
             System.out.println(ex);
+            return new MatchResult(null, false, "Image is empty.");
         }
         return this.Match(image, groupId, maxResults);
     }
@@ -408,6 +431,15 @@ public class FaceClient implements IFaceClient
     private RecognitionMessage matrixToRecognitionMessage(BufferedImage image, MessageType type){
         Mat mat = this.convertImage(image);
         return this.matrixToRecognitionMessage(mat, type);
+    }
+
+    private CascadeClassifier getFaceDetector() throws ConfigurationException{
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        String filePath = classloader.getResource("haarcascade_frontalface_default.xml").getFile();
+        if(filePath == null){
+            throw new ConfigurationException("haarcascade_frontalface_default.xml is not found.");
+        }
+        return new CascadeClassifier(filePath);
     }
 
     public static void main(final String[] args) {
