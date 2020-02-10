@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import countr.faceclient.FaceClient;
 import countr.faceclient.IFaceClient;
+import countr.common.DetectFaceResult;
 import junit.framework.Assert;
 
 public class ClientDetectFace {
@@ -26,6 +27,24 @@ public class ClientDetectFace {
         String filePath = "";
 
         Assert.assertTrue(!fc.ContainsFace(filePath).isSuccess());
+    }
+
+    @Test
+    public void Test_CascadeFailNoFace() throws IOException {
+        IFaceClient fc = null;
+        try{
+            fc = new FaceClient();
+        }
+        catch (Exception e){
+            System.out.println(e);
+            return;
+        }
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        String filePath = classloader.getResource("photo_noface.jpg").getFile();
+
+        DetectFaceResult res = fc.ContainsFace(filePath);
+        System.out.println(res);
+        Assert.assertTrue(!res.isSuccess());
     }
 
     @Test
