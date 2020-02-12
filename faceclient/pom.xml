@@ -18,14 +18,6 @@
     <maven.compiler.target>1.8</maven.compiler.target>
 
     <!-- Imported for mtcnn-java -->
-    <nd4j.version>1.0.0-beta2</nd4j.version>
-    <!--<nd4j.version>1.0.0-SNAPSHOT</nd4j.version>-->
-    <tensorflow.version>1.9.0</tensorflow.version>
-    <openblas.version>0.3.0</openblas.version>
-    <javacpp-presets.version>1.4.2</javacpp-presets.version>
-    <mkl.version>2018.3</mkl.version>
-    <mkl-dnn.version>0.15</mkl-dnn.version>
-    <jmh.version>1.21</jmh.version>
     <apache.commons>1.17</apache.commons>
     <spring-framework.version>5.0.7.RELEASE</spring-framework.version>
     <jackson.version>2.9.6</jackson.version>
@@ -82,17 +74,6 @@
         <artifactId>opencv-platform</artifactId>
         <version>4.2.0-1.5.3-SNAPSHOT</version>
     </dependency>
-    <dependency>
-        <groupId>org.nd4j</groupId>
-        <artifactId>nd4j-native-platform</artifactId>
-        <version>${nd4j.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.nd4j</groupId>
-        <artifactId>nd4j-native</artifactId>
-        <version>${nd4j.version}</version>
-        <classifier>linux-x86_64-avx2</classifier>
-    </dependency>
 </dependencies>
 
 <build>
@@ -114,6 +95,9 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.1</version>
+                <!-- <configuration> -->
+                <!--     <useSystemClassLoader>false</useSystemClassLoader> -->
+                <!-- </configuration> -->
             </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
