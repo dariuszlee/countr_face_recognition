@@ -57,11 +57,17 @@ public class FaceClient implements IFaceClient
     private final float matchThreshold;
     private final float verifyThreshold;
 
+    private final int connectionTimeout;
+    private final int requestTimeout;
+
     private final CascadeClassifier faceDetector;
 
     public FaceClient() throws ConfigurationException {
         final Configurations configs = new Configurations();
         final Configuration config = configs.properties(new File("client.properties"));
+
+        this.connectionTimeout = config.getInt("client.connectionTimeout");
+        this.requestTimeout = config.getInt("client.requestTimeout");
 
         this.connectionString = "tcp://" + config.getString("client.host") + ":" + config.getString("client.port");
         this.maxImageSize = config.getInt("client.maxImageSize");
@@ -379,6 +385,8 @@ public class FaceClient implements IFaceClient
 
         final UUID uuId = UUID.randomUUID();
         try(final ZMQ.Socket socket = this.zeroMqContext.createSocket(SocketType.REQ)){
+            socket.setSendTimeOut(this.connectionTimeout);
+            socket.setReceiveTimeOut(this.connectionTimeout);
             socket.connect(this.connectionString);
 
             final RecognitionMessage message = RecognitionMessage.createActivate(uuId);
@@ -387,7 +395,12 @@ public class FaceClient implements IFaceClient
             socket.send(messageData, 0);
 
             final byte[] reply = socket.recv(0);
-            System.out.println("Activation reply: " + reply);
+            if (reply == null){
+
+            }
+            else{
+                System.out.println("Activation reply: " + reply);
+            }
         }
         return uuId;
     }

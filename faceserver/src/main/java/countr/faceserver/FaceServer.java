@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -21,6 +22,8 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import countr.common.FaceDatabase;
 import countr.common.FaceDetection;
 import countr.common.FaceEmbedding;
@@ -38,30 +41,37 @@ import countr.utils.DebugUtils;
 
 
 public class FaceServer implements IFaceServer{
-    MXNetUtils resnet100;
-    FaceDetection faceDetector;
-    int port;
-    ZContext zContext;
-    FaceDatabase faceDb; 
+    private final MXNetUtils resnet100;
+    private final FaceDetection faceDetector;
+    private final int port;
+    private final ZContext zContext;
+    private final FaceDatabase faceDb; 
+    private final Logger log;
 
-    public FaceServer(final boolean isGpu, final String modelDir, final int port, final boolean isDebug) throws IOException {
+    public FaceServer(final boolean isGpu, final String modelDir, final int port, final boolean isDebug) throws IOException, SQLException {
+        this.log = LoggerFactory.getLogger(this.getClass());
+
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        String modelDirString = classloader.getResource(modelDir).getPath();
-        if (modelDirString == null){
-            System.out.println("Please put your model in src/main/resources/");
+        URL modelDirUri = classloader.getResource(modelDir);
+        if (modelDirUri == null){
+            this.log.error("Please put your model in src/main/resources/");
             throw new IOException("ArcFace Model is not in correct position. Please read readme.");
         }
+        String modelDirString = modelDirUri.getPath();
         String modelPath = modelDirString +  "model";
+
 
         this.resnet100 = new MXNetUtils(isGpu, modelPath);
         this.faceDetector = new FaceDetection(isDebug);
         this.port = port;
         this.zContext = new ZContext();
+
         try {
             this.faceDb = new FaceDatabase();
         }
         catch (final SQLException ex){
-            System.out.println("Unable to create database...");    
+            this.log.error("Unable to create database...");
+            throw ex;
         }
     }
 
@@ -76,37 +86,42 @@ public class FaceServer implements IFaceServer{
                 final RecognitionMessage message = SerializationUtils.deserialize(reply);
 
                 final MessageType type = message.getType();
-                System.out.println("Received message from " + message.getSender() + " of type: " + type);
+                this.log.info("Received message from " + message.getSender() + " of type: " + type);
 
                 ServerResult response = null;
-                switch (type){
-                    case Activate:
-                        break;
-                    case Deactivate:
-                        break;
-                    case Recognize:
-                        response = this.Recognize(message);
-                        break;
-                    case AddPhoto:
-                        response = this.AddPhoto(message);
-                        break;
-                    case GetEmbeddings:
-                        response = this.getEmbeddings(message);
-                        break;
-                    case DeleteGroup:
-                        response = this.deleteGroup(message);
-                        break;
-                    case DeleteUser:
-                        response = this.deleteUser(message);
-                        break;
-                    case Match:
-                        response = this.getMatches(message);
-                        break;
-                    case Verify:
-                        response = this.verify(message);
-                        break;
-                    default:
-                        System.out.println("Message not implemented...");
+                try {
+                    switch (type){
+                        case Activate:
+                            break;
+                        case Deactivate:
+                            break;
+                        case Recognize:
+                            response = this.Recognize(message);
+                            break;
+                        case AddPhoto:
+                            response = this.AddPhoto(message);
+                            break;
+                        case GetEmbeddings:
+                            response = this.getEmbeddings(message);
+                            break;
+                        case DeleteGroup:
+                            response = this.deleteGroup(message);
+                            break;
+                        case DeleteUser:
+                            response = this.deleteUser(message);
+                            break;
+                        case Match:
+                            response = this.getMatches(message);
+                            break;
+                        case Verify:
+                            response = this.verify(message);
+                            break;
+                        default:
+                            this.log.warn("Message not implemented...");
+                    }
+                }
+                catch (Exception ex) {
+
                 }
 
                 // Send a response
@@ -132,23 +147,22 @@ public class FaceServer implements IFaceServer{
             }
         }
         catch (final SQLException ex){
-            System.out.println("Failed getting embeddings...");
-            System.out.println(ex);
+            this.log.warn("Failed getting embeddings...");
+            this.log.warn(ex.toString());
             return new VerifyResult(null, false, "Face database error.");
         }
         catch (ArrayIndexOutOfBoundsException ex){
-            System.out.println("There are no match results.");
-            System.out.println("Embeddings: " + embeddings);
-            // System.out.println("Feature: " + feature);
-            System.out.println(ex);
+            this.log.warn("There are no match results.");
+            this.log.warn("Embeddings: " + embeddings);
+            this.log.warn(ex.toString());
             return new VerifyResult(null, false, "No recognition results.");
         }
         catch (Exception ex){
-            System.out.println(ex);
+            this.log.warn(ex.toString());
             return new VerifyResult(null, false, "Unknown Server Exception: " + ex.toString());
         }
 
-        System.out.println("Failed verifying message: " + message.getSender());
+        this.log.warn("Failed verifying message: " + message.getSender());
         return new VerifyResult(null, false, "Unknown error: Verify Failed");
     }
 
@@ -185,7 +199,7 @@ public class FaceServer implements IFaceServer{
     public RecognitionResult AddPhoto(final RecognitionMessage message){
         final float[] feature = this.imageToFeatures(message);
         if(feature == null){
-            System.out.println("Feature Recognition failed..");
+            this.log.warn("Feature Recognition failed..");
             return new RecognitionResult(feature, false);
         }
 
@@ -209,7 +223,8 @@ public class FaceServer implements IFaceServer{
             return new ServerResult(true);
         }
         catch (final SQLException ex){
-            System.out.println(ex);
+            this.log.warn("Problem deleting users...");
+            this.log.warn(ex.toString());
             return new ServerResult(false);
         }
     }
@@ -220,7 +235,8 @@ public class FaceServer implements IFaceServer{
             return new ServerResult(true);
         }
         catch (final SQLException ex){
-            System.out.println(ex);
+            this.log.warn("Problem deleting group...");
+            this.log.warn(ex.toString());
             return new ServerResult(false);
         }
     }
@@ -246,18 +262,21 @@ public class FaceServer implements IFaceServer{
             }
         }
         catch (final SQLException ex){
-            System.out.println("Failed getting embeddings...");
-            System.out.println(ex);
+            this.log.warn("Failed getting embeddings...");
+            this.log.warn(ex.toString());
             return new MatchResult(null, false);
         }
 
-        System.out.println("Failed matching message: " + message.getSender());
+        this.log.warn("Failed matching message: " + message.getSender());
         return new MatchResult(null, false);
     }
 
     public static void main(final String[] args) {
+        final Logger log = LoggerFactory.getLogger(FaceServer.class);
+
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         final Configurations configs = new Configurations();
+
 
         String modelPath = "";
         boolean isGpu = false;
@@ -273,23 +292,23 @@ public class FaceServer implements IFaceServer{
         }
         catch (final ConfigurationException cex)
         {
-            System.out.println(cex);
+            log.error(cex.toString());
             System.exit(1);
         }
 
-        System.out.println("Starting server...");
+        log.info("Starting server...");
         FaceServer server = null;
         try {
             server = new FaceServer(isGpu, modelPath, port, isDebug);
         }
         catch (Exception ex){
-            System.out.println("Error loading faceserver");
-            System.out.println(ex);
+            log.error("Error loading faceserver");
+            log.error(ex.toString());
             System.exit(1);
         }
 
-        System.out.println("Face Server initialized. Listening...");
+        log.info("Face Server initialized. Listening...");
         server.Listen();
-        System.out.println("Exiting...");
+        log.info("Exiting...");
     }
 }

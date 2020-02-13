@@ -6,6 +6,7 @@ found_images*
 .project
 .settings/
 target/
+logs/
 face.db
 
 model-r100-ii/
