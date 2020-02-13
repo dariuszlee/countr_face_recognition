@@ -4,6 +4,7 @@
 1. ZeroMq load balancing, configurable multiple ports
 2. Amazon AWS protoype?
 3. Command Line Arguments - Atleast Server Location - address:port
+4. IMPORTANT: Opencv dependency in the client? find an alternative or at least make opencv a fallback
 
 # Week January 27 2020
 
