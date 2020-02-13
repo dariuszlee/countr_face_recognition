@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import countr.common.DetectFaceResult;
 import countr.common.EmbeddingResponse;
 import countr.common.MatchResult;
 import countr.common.VerifyResult;
@@ -31,6 +32,10 @@ public class ClientAdvancedUsage {
 
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
         String directoryPath = classloader.getResource("multi-face.jpg").getFile();
+        
+        DetectFaceResult res = fc.ContainsFace(directoryPath);
+        System.out.println(res);
+
         int groupId = 2;
 
         fc.Recognize(directoryPath, groupId);

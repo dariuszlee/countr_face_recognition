@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import countr.common.EmbeddingResponse;
@@ -25,6 +26,7 @@ public class ClientUsageExample1 {
         }
         catch (Exception e){
             System.out.println(e);
+            Assert.assertEquals(fc, "Server connection failed");
             return;
         }
         int groupId = 1;

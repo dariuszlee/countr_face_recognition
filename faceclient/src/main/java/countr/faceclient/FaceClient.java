@@ -22,9 +22,12 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.videoio.VideoCapture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
+
 import countr.utils.DebugUtils;
 import countr.common.DetectFaceResult;
 import countr.common.EmbeddingResponse;
@@ -47,6 +50,7 @@ public class FaceClient implements IFaceClient
             System.exit(1);
         }
     }
+    private final Logger log;
 
     private final String connectionString;
     private final int maxImageSize;
@@ -63,6 +67,8 @@ public class FaceClient implements IFaceClient
     private final CascadeClassifier faceDetector;
 
     public FaceClient() throws ConfigurationException {
+        log = LoggerFactory.getLogger(this.getClass());
+
         final Configurations configs = new Configurations();
         final Configuration config = configs.properties(new File("client.properties"));
 
@@ -92,7 +98,7 @@ public class FaceClient implements IFaceClient
         {
             final boolean res = vc.read(matrix);
             if (matrix.empty()){
-                System.out.println("Warning Empty Matrix...");
+                this.log.warn("Empty Matrix from camera.");
             }
         }
         vc.release();
@@ -130,7 +136,8 @@ public class FaceClient implements IFaceClient
 
             final byte[] reply = socket.recv(0);
             RecognitionResult replyMessage = SerializationUtils.deserialize(reply);
-            System.out.println(replyMessage);
+
+            this.log.debug(replyMessage.toString());
             return replyMessage;
         }
     }
@@ -142,8 +149,8 @@ public class FaceClient implements IFaceClient
             image = Imgcodecs.imread(path);
         }
         catch (Exception ex){
-            System.out.println("Loading image file failed... Check path.");
-            System.out.println(ex);
+            this.log.warn("Loading image file failed... Check path.");
+            this.log.warn(ex.toString());
             return new RecognitionResult(null, false, "Image is empty.");
         }
         return this.Recognize(image, groupId);
@@ -160,7 +167,8 @@ public class FaceClient implements IFaceClient
 
         final byte[] replyBytes = socket.recv(0);
         ServerResult reply = SerializationUtils.deserialize(replyBytes);
-        System.out.println("Deactivation reply: " + reply);
+
+        this.log.debug("Deactivation reply: " + reply);
         return reply;
     }
 
@@ -171,8 +179,8 @@ public class FaceClient implements IFaceClient
             image = Imgcodecs.imread(path);
         }
         catch (Exception ex){
-            System.out.println("Loading image file failed... Check path.");
-            System.out.println(ex);
+            this.log.error("Loading image file failed... Check path.");
+            this.log.error(ex.toString());
             return new RecognitionResult(null, false, "Image is empty.");
         }
         return this.AddPhoto(image, userId, groupId);
@@ -208,10 +216,16 @@ public class FaceClient implements IFaceClient
         try {
             MatOfRect d = new MatOfRect();;
             this.faceDetector.detectMultiScale(mat, d);
-            return new DetectFaceResult(d.toList().size() != 0, "");
+            int numFaces = d.toList().size();
+            if(numFaces > 0){
+                return new DetectFaceResult(true, "", numFaces);
+            }
+            else {
+                return new DetectFaceResult(false, "No face found.");
+            }
         }
         catch (Exception ex){
-            System.out.println("Exception occured: " + ex);
+            this.log.error("Exception occured: " + ex.toString());
             return new DetectFaceResult(false, "No face found.");
         }
     }
@@ -380,7 +394,7 @@ public class FaceClient implements IFaceClient
         }
     }
 
-    private UUID attemptConnect(){
+    private UUID attemptConnect() throws ConfigurationException {
         System.out.println("Attempting registration with FaceServer...");
 
         final UUID uuId = UUID.randomUUID();
@@ -396,7 +410,7 @@ public class FaceClient implements IFaceClient
 
             final byte[] reply = socket.recv(0);
             if (reply == null){
-
+                throw new ConfigurationException("Cannot connect to server. Make sure server is up and right address-port is specified.");
             }
             else{
                 System.out.println("Activation reply: " + reply);
