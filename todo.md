@@ -5,6 +5,7 @@
 2. Amazon AWS protoype?
 3. Command Line Arguments - Atleast Server Location - address:port
 4. IMPORTANT: Opencv dependency in the client? find an alternative or at least make opencv a fallback
+5. Implement GetMatches filter. Speed improvement?
 
 # Week January 27 2020
 
