@@ -7,8 +7,6 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import net.tzolov.cv.mtcnn.FaceAnnotation;
 import net.tzolov.cv.mtcnn.FaceAnnotation.BoundingBox;
 import net.tzolov.cv.mtcnn.MtcnnService;
@@ -27,12 +25,10 @@ import static org.nd4j.linalg.indexing.NDArrayIndex.interval;
 
 public class FaceDetection {
     MtcnnService  mtcnnService;
-    ObjectMapper jsonMapper;
     boolean isDebug;
 
     public FaceDetection(boolean isDebug){
 		this.mtcnnService = new MtcnnService(30, 0.709, new double[] { 0.6, 0.7, 0.7 });
-		this.jsonMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         this.isDebug = isDebug;
     }
 
@@ -54,7 +50,6 @@ public class FaceDetection {
             String directoryPath = classloader.getResource("debug/").getPath();
             String imageDebugPath = directoryPath + "./AnnotatedImage.png";
             ImageIO.write(annotatedImage, "png", new File(imageDebugPath));
-            System.out.println("Face Annotations (JSON): " + jsonMapper.writeValueAsString(faceAnnotations));
         }
 
 
