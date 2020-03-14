@@ -75,9 +75,9 @@
         <version>0.5.2-SNAPSHOT</version>
     </dependency>
     <dependency>
-        <groupId>org.bytedeco</groupId>
+        <groupId>org.bytedeco.javacpp-presets</groupId>
         <artifactId>opencv-platform</artifactId>
-        <version>4.2.0-1.5.3-SNAPSHOT</version>
+        <version>3.4.2-1.4.2</version>
     </dependency>
 </dependencies>
 

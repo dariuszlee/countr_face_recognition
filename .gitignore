@@ -8,5 +8,6 @@ found_images*
 target/
 logs/
 face.db
+nuaa/
 
 model-r100-ii/

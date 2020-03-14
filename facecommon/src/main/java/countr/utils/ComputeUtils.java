@@ -10,17 +10,6 @@ import countr.common.FaceEmbedding;
 import countr.common.RecognitionMatch;
 
 public class ComputeUtils {
-
-    // public class UniquePriorityQueue {
-    //     public UniquePriorityQueue(int numberOfResults){
-    //         super(numberOfResults);
-    //     }
-
-    //     public void add(RecognitionMatch match){
-    //         if()
-    //     }
-    // }
-
     public static float EucDistance(float[] feature){
         float dot = getDotProduct(feature, feature);
         return (float) Math.sqrt(dot); 

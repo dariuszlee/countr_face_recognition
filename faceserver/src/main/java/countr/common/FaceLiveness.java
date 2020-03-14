@@ -1,20 +1,25 @@
 package countr.common;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.File;
 
-import org.deeplearning4j.nn.graph.ComputationGraph;
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
 
 public class FaceLiveness {
-    private final ComputationGraph faceLivenessNetwork;
-    public FaceLiveness(){
+    private final MultiLayerNetwork faceLivenessNetwork;
+    public FaceLiveness() throws IOException {
         try {
-            FileInputStream modelStream = new FileInputStream(new File("../Face-Liveness-Detection/models/anandfinal.hdf5"));
-            faceLivenessNetwork = KerasModelImport.importKerasModelAndWeights(modelStream);
+            String path = "../Face-Liveness-Detection/models/anandfinal.hdf5";
+            // FileInputStream modelStream = new FileInputStream(new File("../Face-Liveness-Detection/models/anandfinal.hdf5"));
+            faceLivenessNetwork = KerasModelImport.importKerasSequentialModelAndWeights(path);
+        }
+        catch (IOException e){
+            throw e;
         }
         catch (Exception e){
-            throw new 
+            throw new IOException(e.toString());
         }
     }        
 
