@@ -22,27 +22,12 @@
     <spring-framework.version>5.0.7.RELEASE</spring-framework.version>
     <jackson.version>2.9.6</jackson.version>
 </properties>
-<repositories>
-    <repository>
-        <id>sonatype-nexus-snapshots</id>
-        <name>Sonatype Nexus Snapshots</name>
-        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        <releases>
-            <enabled>false</enabled>
-        </releases>
-        <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>daily</updatePolicy>  <!-- Optional, update daily -->
-        </snapshots>
-    </repository>
-
-    <!-- <repository> -->
-    <!--     <id>jcenter</id> -->
-    <!--     <url>https://jcenter.bintray.com/</url> -->
-    <!-- </repository> -->
-</repositories>
-
 <dependencies>
+    <dependency>
+        <groupId>net.sf.py4j</groupId>
+        <artifactId>py4j</artifactId>
+        <version>0.10.9</version>
+    </dependency>
     <dependency> 
         <groupId>ch.qos.logback</groupId> 
         <artifactId>logback-classic</artifactId> 
@@ -72,7 +57,7 @@
     <dependency>
         <groupId>org.zeromq</groupId>
         <artifactId>jeromq</artifactId>
-        <version>0.5.2-SNAPSHOT</version>
+        <version>0.5.2</version>
     </dependency>
     <dependency>
         <groupId>org.bytedeco.javacpp-presets</groupId>
@@ -82,144 +67,31 @@
 </dependencies>
 
 <build>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
-        <plugins>
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <version>3.1.0</version>
-            </plugin>
-            <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.0.2</version>
-            </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
-            </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.1</version>
-                <!-- <configuration> -->
-                <!--     <useSystemClassLoader>false</useSystemClassLoader> -->
-                <!-- </configuration> -->
-            </plugin>
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.0.2</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>countr.faceclient.FaceClient</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>2.5.2</version>
-            </plugin>
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.8.2</version>
-            </plugin>
-            <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
-            <plugin>
-                <artifactId>maven-site-plugin</artifactId>
-                <version>3.7.1</version>
-            </plugin>
-            <plugin>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>3.0.0</version>
-            </plugin>
-      </plugins>
-  </pluginManagement>
-  </build>
-  <profiles>
-      <profile>
-          <id>Client</id>
-          <build>
-              <pluginManagement>
-                  <plugins>
-                      <plugin>
-                          <groupId>org.codehaus.mojo</groupId>
-                          <artifactId>exec-maven-plugin</artifactId>
-                          <version>1.2.1</version>
-                          <configuration>
-                              <mainClass>countr.faceclient.FaceClient</mainClass>
-                          </configuration>
-                      </plugin>
-                  </plugins>
-              </pluginManagement>
-          </build>
-      </profile>
-      <profile>
-          <id>Server</id>
-          <build>
-              <pluginManagement>
-                  <plugins>
-                      <plugin>
-                          <groupId>org.codehaus.mojo</groupId>
-                          <artifactId>exec-maven-plugin</artifactId>
-                          <version>1.2.1</version>
-                          <configuration>
-                              <mainClass>countr.faceserver.FaceServer</mainClass>
-                          </configuration>
-                      </plugin>
-                  </plugins>
-              </pluginManagement>
-          </build>
-      </profile>
-      <profile>
-          <id>FaceDetection</id>
-          <build>
-              <pluginManagement>
-                  <plugins>
-                      <plugin>
-                          <groupId>org.codehaus.mojo</groupId>
-                          <artifactId>exec-maven-plugin</artifactId>
-                          <version>1.2.1</version>
-                          <configuration>
-                              <mainClass>countr.common.FaceDetection</mainClass>
-                          </configuration>
-                      </plugin>
-                  </plugins>
-              </pluginManagement>
-          </build>
-      </profile>
-      <profile>
-          <id>MXNet</id>
-          <build>
-              <pluginManagement>
-                  <plugins>
-                      <plugin>
-                          <groupId>org.codehaus.mojo</groupId>
-                          <artifactId>exec-maven-plugin</artifactId>
-                          <version>1.2.1</version>
-                          <configuration>
-                              <mainClass>countr.common.MXNetUtils</mainClass>
-                          </configuration>
-                      </plugin>
-                  </plugins>
-              </pluginManagement>
-          </build>
-      </profile>
-      <profile>
-          <id>FaceDatabase</id>
-          <build>
-              <pluginManagement>
-                  <plugins>
-                      <plugin>
-                          <groupId>org.codehaus.mojo</groupId>
-                          <artifactId>exec-maven-plugin</artifactId>
-                          <version>1.2.1</version>
-                          <configuration>
-                              <mainClass>countr.common.FaceDatabase</mainClass>
-                          </configuration>
-                      </plugin>
-                  </plugins>
-              </pluginManagement>
-          </build>
-      </profile>
-  </profiles>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.2.0</version>
+            <configuration>
+                <archive>
+                    <manifest>
+                        <mainClass>countr.FaceClientGateway</mainClass>
+                    </manifest>
+                </archive>
+                <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
+            </configuration>
+            <executions>
+                <execution>
+                    <id>make-assembly</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>single</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
 </project>

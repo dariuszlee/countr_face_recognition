@@ -12,6 +12,7 @@ import countr.common.VerifyResult;
 
 public interface IFaceClient {
     public Mat ReadCamera(int deviceId);
+    public Mat ReadFile(String path);
 
     public DetectFaceResult ContainsFace(Mat mat);
     public DetectFaceResult ContainsFace(String mat);

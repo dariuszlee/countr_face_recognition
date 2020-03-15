@@ -91,6 +91,19 @@ public class FaceClient implements IFaceClient
     }
 
     @Override
+    public Mat ReadFile(String path){
+        Mat image = null;
+        try {
+            image = Imgcodecs.imread(path);
+        }
+        catch (Exception ex){
+            this.log.warn("Loading image file failed... Check path.");
+            this.log.warn(ex.toString());
+        }
+        return image;
+    }
+
+    @Override
     public Mat ReadCamera(int videoDevice){
         final VideoCapture vc = new VideoCapture();
         Mat matrix = new Mat();
