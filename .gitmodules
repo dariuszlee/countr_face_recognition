@@ -4,3 +4,12 @@
 [submodule "Face-Liveness-Detection"]
 	path = Face-Liveness-Detection
 	url = https://github.com/anand498/Face-Liveness-Detection
+[submodule "faceclient"]
+	path = faceclient
+	url = git@github.com:dariuszlee/countr_faceclient.git
+[submodule "faceserver"]
+	path = faceserver
+	url = git@github.com:dariuszlee/countr_faceserver.git
+[submodule "facecommon"]
+	path = facecommon
+	url = git@github.com:dariuszlee/countr_facecommon.git
