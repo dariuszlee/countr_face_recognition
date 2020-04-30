@@ -1,0 +1,10 @@
+mtcnn-java/
+facecommon/
+model-r100-ii/
+nuaa/
+.classpath
+.project
+.settings/
+target/
+logs/
+face.db
